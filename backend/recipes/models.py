@@ -3,7 +3,6 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
 
-
 from api_foodgram.constans import (MAX_LENGTH_RECIPES_UNIT_MEASUREMENT,
                                    MIN_VALUE, NAME_MAX_LENGTH_RECIPES)
 

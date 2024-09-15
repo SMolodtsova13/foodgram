@@ -1,15 +1,14 @@
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from rest_framework import exceptions, serializers
-from rest_framework.validators import UniqueTogetherValidator
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
+from rest_framework import exceptions, serializers
+from rest_framework.validators import UniqueTogetherValidator
 
 from users.validators import validate_username, validate_email
 from users.models import Follow
 from recipes.models import (Tag, Favourites, Ingredient,
                             Recipe, IngredientRecipe, ShoppingList)
-
 User = get_user_model()
 
 
