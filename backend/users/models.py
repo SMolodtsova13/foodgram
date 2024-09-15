@@ -2,11 +2,10 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.db.models import UniqueConstraint
 
-from api_foodgram.constans import NAME_MAX_LENGTH, EMAIL_MAX_LENGTH
+from api_foodgram.constants import NAME_MAX_LENGTH, EMAIL_MAX_LENGTH
 
 
 class UserRoles(models.TextChoices):
-
     USER = 'user', 'Пользователь'
     ADMINISTRATOR = 'admin', 'Администратор'
 
