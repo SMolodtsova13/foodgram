@@ -9,6 +9,7 @@ from users.validators import validate_username, validate_email
 from users.models import Follow
 from recipes.models import (Tag, Favourites, Ingredient,
                             Recipe, IngredientRecipe, ShoppingList)
+
 User = get_user_model()
 
 
