@@ -1,17 +1,61 @@
-version: '3.3'
 services:
+  db:
+    image: postgres:13
+    env_file: .env
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+  
+    # volumes:
+    #   - static:/static
+    #   - media:/app/media
+
+    # volumes:
+    #   - backend_static:/app/backend_static/
+    #   - media_value:/app/media/
+
+  backend:
+    image: smolodtsova13/foodgram_backend:latest
+    env_file: .env
+    volumes:
+      - static:/static/
+      - media:/media/
 
   frontend:
-    container_name: foodgram-front
-    build: ../frontend
+    image: smolodtsova13/foodgram_frontend:latest
+    env_file: .env
+    command: cp -r /app/build/. /static/
+    depends_on:
+      - backend  
     volumes:
-      - ../frontend/:/app/result_build/
+      - static:/static/
+
   nginx:
-    container_name: foodgram-proxy
-    image: nginx:1.25.4-alpine
+    image: smolodtsova13/foodgram_nginx:latest
     ports:
-      - "80:80"
+      - 80:80
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ../frontend/build:/usr/share/nginx/html/
-      - ../docs/:/usr/share/nginx/html/api/docs/
+      - static:/static/
+      - media:/media
+# services:
+
+#   frontend:
+#     container_name: foodgram-front
+#     build: ../frontend
+#     volumes:
+#       - ../frontend/:/app/result_build/
+#   nginx:
+#     container_name: foodgram-proxy
+#     image: nginx:1.25.4-alpine
+#     ports:
+#       - "80:80"
+#     volumes:
+#       - ./nginx.conf:/etc/nginx/conf.d/default.conf
+#       - ../frontend/build:/usr/share/nginx/html/
+#       - ../docs/:/usr/share/nginx/html/api/docs/
+
+volumes:
+  pg_data:
+  media:
+  static:
+
+
