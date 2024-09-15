@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.filters import SearchFilter
 from rest_framework.decorators import action
-from rest_framework.permissions import (IsAuthenticated, IsAuthenticatedOrReadOnly)
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from api.serializers import (IngredientSerializer, FollowSerializer,
@@ -18,7 +18,8 @@ from api.serializers import (IngredientSerializer, FollowSerializer,
 from api.filters import RecipeFilter
 from api.permissions import IsAuthorOrReadOnlyPermission
 from api.pagination import LimitPagination
-from recipes.models import (IngredientRecipe, Tag, Ingredient, Favourites, Recipe, ShoppingList)
+from recipes.models import (IngredientRecipe, Tag, Ingredient,
+                            Favourites, Recipe, ShoppingList)
 from users.models import Follow
 
 
@@ -103,7 +104,8 @@ class FollowViewSet(viewsets.ModelViewSet):
     def subscribers(self, request):
         """Список всех авторов, на которых подписан пользователь."""
         user = self.request.user
-        queryset = Follow.objects.filter(user=user).values_list('author', flat=True)
+        queryset = Follow.objects.filter(user=user).values_list('author',
+                                                                flat=True)
         authors = User.objects.filter(id__in=queryset)
         serializer = CustomUserSerializer(authors, many=True)
         return Response(serializer.data)
@@ -112,7 +114,8 @@ class FollowViewSet(viewsets.ModelViewSet):
     def subscribed_by(self, request):
         """Список пользователей, подписанных на текущего автора."""
         author = self.request.user
-        queryset = Follow.objects.filter(author=author).values_list('user', flat=True)
+        queryset = Follow.objects.filter(author=author).values_list('user',
+                                                                    flat=True)
         users = User.objects.filter(id__in=queryset)
         serializer = CustomUserSerializer(users, many=True)
         return Response(serializer.data)
@@ -145,8 +148,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    @action(methods=['GET'], detail=False,
-           permission_classes=[IsAuthenticated])
+    @action(methods=('GET',), detail=False,
+            permission_classes=[IsAuthenticated])
     def download_shopping_cart(self, request):
         """Скачивание списка покупок"""
         shopping_result = {}
@@ -257,6 +260,8 @@ class RecipeFavoritesViewSet(viewsets.ModelViewSet):
     def favorite_recipes(self, request):
         """Получение списка избранных рецептов."""
         user = self.request.user
-        queryset = Favourites.objects.filter(user=user).select_related('recipes')
+        queryset = Favourites.objects.filter(
+            user=user
+            ).select_related('recipes')
         serializer = FavoritesSerializer(queryset, many=True)
         return Response(serializer.data)

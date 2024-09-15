@@ -1,18 +1,20 @@
 from django.urls import include, path, re_path
 from rest_framework import routers
-from django.conf import settings
-from django.conf.urls.static import static
+# from django.conf import settings
+# from django.conf.urls.static import static
 
 from api.views import (IngredientViewSet, RecipeViewSet, TagViewSet,
-                       UserViewSet, FollowViewSet,
-                       ShoppingViewSet, RecipeFavoritesViewSet)
+                       UserViewSet)
+# FollowViewSet,
+#                        ShoppingViewSet, RecipeFavoritesViewSet)
 
 app_name = 'api'
-router  = routers.DefaultRouter()
+
+router = routers.DefaultRouter()
 router.register(r'users', UserViewSet, basename='users')
-router.register(r'tags', TagViewSet,  basename='tags')
+router.register(r'tags', TagViewSet, basename='tags')
 router.register(r'ingredients', IngredientViewSet, basename='ingredients')
-router.register(r'recipes', RecipeViewSet,  basename='recipes')
+router.register(r'recipes', RecipeViewSet, basename='recipes')
 
 v1_urlpatterns = [
     path('', include(router.urls)),
