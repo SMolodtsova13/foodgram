@@ -77,7 +77,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             # Выполняет pull образа с DockerHub 
-            sudo docker pull smolodtsova13/foodgram-project
+            sudo docker pull smolodtsova13/foodgram-backend
             rm .env
             touch .env
             echo DEBUG=${{ secrets.DEBUG }} >> .env
