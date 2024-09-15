@@ -1,62 +1,112 @@
-volumes:
-  pg_data:
-  media:
-  static:
-  
+# volumes:
+#   pg_data:
+#   media:
+#   static:
+
 services:
+
   db:
-    image: postgres:13
-    env_file: .env
+    image: postgres:13.0-alpine
     volumes:
-      - pg_data:/var/lib/postgresql/data
-  
-    # volumes:
-    #   - static:/static
-    #   - media:/app/media
+      - postgres_data:/var/lib/postgresql/data/
+    env_file:
+      - ./.env
 
-    # volumes:
-    #   - backend_static:/app/backend_static/
-    #   - media_value:/app/media/
-
-  backend:
-    image: smolodtsova13/foodgram_backend:latest
-    env_file: .env
+  web:
+    image: smolodtsova13/foodgram-project:latest
+    restart: always
     volumes:
-      - static:/static/
-      - media:/media/
-
-  frontend:
-    image: smolodtsova13/foodgram_frontend:latest
-    env_file: .env
-    command: cp -r /app/build/. /static/
+      - static_value:/app/static/
+      - media_value:/app/media/
     depends_on:
-      - backend  
-    volumes:
-      - static:/static/
+      - db
+    env_file:
+      - ./.env
 
   nginx:
-    image: smolodtsova13/foodgram_nginx:latest
+    image: nginx:1.19.3
     ports:
-      - 80:80
+      - "80:80"
     volumes:
-      - static:/static/
-      - media:/media
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ../frontend/build:/usr/share/nginx/html/
+      - ../docs:/usr/share/nginx/html/api/docs/
+      - static_value:/var/html/static/
+      - media_value:/var/html/media/
+    depends_on:
+      - web
+      - frontend
+
+  frontend:
+    image: smolodtsova13/foodgram_frontend
+    links:
+      - web
+    volumes:
+      - ../frontend/:/app/result_build/
+
+
+volumes:
+  static_value:
+  media_value:
+  postgres_data:
+
+
+
+
 # services:
+#   db:
+#     image: postgres:13
+#     env_file: .env
+#     volumes:
+#       - pg_data:/var/lib/postgresql/data
+  
+#     # volumes:
+#     #   - static:/static
+#     #   - media:/app/media
+
+#     # volumes:
+#     #   - backend_static:/app/backend_static/
+#     #   - media_value:/app/media/
+
+#   backend:
+#     image: smolodtsova13/foodgram_backend:latest
+#     env_file: .env
+#     volumes:
+#       - static:/static/
+#       - media:/media/
 
 #   frontend:
-#     container_name: foodgram-front
-#     build: ../frontend
+#     image: smolodtsova13/foodgram_frontend:latest
+#     env_file: .env
+#     command: cp -r /app/build/. /static/
+#     depends_on:
+#       - backend  
 #     volumes:
-#       - ../frontend/:/app/result_build/
+#       - static:/static/
+
 #   nginx:
-#     container_name: foodgram-proxy
-#     image: nginx:1.25.4-alpine
+#     image: smolodtsova13/foodgram_nginx:latest
 #     ports:
-#       - "80:80"
+#       - 80:80
 #     volumes:
-#       - ./nginx.conf:/etc/nginx/conf.d/default.conf
-#       - ../frontend/build:/usr/share/nginx/html/
-#       - ../docs/:/usr/share/nginx/html/api/docs/
+#       - static:/static/
+#       - media:/media
+# # services:
+
+# #   frontend:
+# #     container_name: foodgram-front
+# #     build: ../frontend
+# #     volumes:
+# #       - ../frontend/:/app/result_build/
+# #   nginx:
+# #     container_name: foodgram-proxy
+# #     image: nginx:1.25.4-alpine
+# #     ports:
+# #       - "80:80"
+# #     volumes:
+# #       - ./nginx.conf:/etc/nginx/conf.d/default.conf
+# #       - ../frontend/build:/usr/share/nginx/html/
+# #       - ../docs/:/usr/share/nginx/html/api/docs/
 
 
 
