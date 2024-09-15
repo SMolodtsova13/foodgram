@@ -2,7 +2,7 @@ import re
 
 from django.core.exceptions import ValidationError
 
-from api_foodgram.constants import NAME_MAX_LENGTH, EMAIL_MAX_LENGTH
+from recipes.constants import NAME_MAX_LENGTH
 
 
 def validate_username(username):
