@@ -36,7 +36,7 @@ class Ingredient(models.Model):
                             max_length=NAME_MAX_LENGTH_RECIPES)
     unit_of_measurement = models.CharField(
         'Единица измерения', max_length=MAX_LENGTH_RECIPES_UNIT_MEASUREMENT
-        )
+    )
 
     class Meta:
         ordering = ('name',)
@@ -170,11 +170,11 @@ class ShoppingList(models.Model):
         verbose_name_plural = 'Корзина'
         constraints = (models.UniqueConstraint(
             fields=("user", "recipe"), name="unique_shopping_list_recipe"
-            ),)
+        ),)
 
         constraints = (models.UniqueConstraint(
             fields=('user', 'recipe'), name='unique_shopping_list'
-            ),)
+        ),)
 
     def __str__(self):
         return f'Рецепт {self.recipe} в списке покупок {self.user.username}'

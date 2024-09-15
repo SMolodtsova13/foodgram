@@ -55,7 +55,7 @@ class UserViewSet(viewsets.ModelViewSet):
         user = self.request.user
         author = get_object_or_404(User, id=id)
         if user == author:
-            return Response({'errors': 'Нельзя подписаться/отписаться от себя!'},
+            return Response({'errors': 'Нельзя отписаться от себя!'},
                             status=status.HTTP_400_BAD_REQUEST)
         if Follow.objects.filter(user=user, author=author).exists():
             return Response({'errors': 'Подписка уже оформлена!'},
@@ -216,16 +216,19 @@ class ShoppingViewSet(viewsets.ModelViewSet):
         user = request.user
         queryset = ShoppingList.objects.filter(
             user=user
-            ).select_related('recipes').order_by('created_at')
+        ).select_related('recipes').order_by('created_at')
         serializer = ShoppingListSerializer(queryset, many=True)
         response = StreamingHttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="shopping_list_{user}.csv"'
+        response['Content-Disposition'] = (
+            f'attachment; filename="shopping_list_{user}.csv"'
+        )
         writer = csv.DictWriter(StringIO(), fieldnames=('recipe__title',
                                                         'recipe__description'))
         writer.writeheader()
         for item in serializer.data:
             writer.writerow({'recipe__title': item['recipe']['title'],
-                             'recipe__description': item['recipe']['description']})
+                             'recipe__description': item['recipe']
+                             ['description']})
         response.write(writer.getvalue())
         return response
 
@@ -262,6 +265,6 @@ class RecipeFavoritesViewSet(viewsets.ModelViewSet):
         user = self.request.user
         queryset = Favourites.objects.filter(
             user=user
-            ).select_related('recipes')
+        ).select_related('recipes')
         serializer = FavoritesSerializer(queryset, many=True)
         return Response(serializer.data)
