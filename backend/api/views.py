@@ -172,8 +172,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
             for name, value in shopping_result.items()
         )
         response = HTTPResponse(shopping_itog, content_type="text/plain")
-        response["Content-Disposition"] = \
+        response["Content-Disposition"] = (
             'attachment; filename="shoppinglist.txt"'
+        )
         return response
 
 
