@@ -75,25 +75,19 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
           script: |
-            # Выполняет pull образа с DockerHub 
-            sudo docker pull smolodtsova13/foodgram-backend
-            rm .env
-            touch .env
-            echo DEBUG=${{ secrets.DEBUG }} >> .env
-            echo ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }} >> .env
-            echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
-            echo DB_NAME=${{ secrets.DB_NAME }} >> .env
-            echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
-            echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
-            echo DB_HOST=${{ secrets.DB_HOST }} >> .env
-            echo DB_PORT=${{ secrets.DB_PORT }} >> .env
-            # остановка всех контейнеров
-            sudo docker compose up --force-recreate -d
-            sudo docker compose exec web python manage.py migrate
-            sudo docker compose exec web python manage.py collectstatic --no-input
+            cd foodgram
+            sudo docker compose -f docker-compose.yml pull
+            sudo docker compose -f docker-compose.yml down
+            sudo docker compose -f docker-compose.yml up -d
+            sudo docker compose -f docker-compose.yml exec backend python manage.py migrate
+            sudo docker compose -f docker-compose.yml exec backend python manage.py collectstatic --no-input
             sudo docker compose exec web python manage.py runscript load_ingredients
-  
+            sudo docker compose -f docker-compose.yml exec backend cp -r /app/collected_static/. /static/static/
+            sudo docker system prune -af
+
+            
 
         # script: |
         #     sudo docker-compose stop
