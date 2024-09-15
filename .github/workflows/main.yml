@@ -66,7 +66,7 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
 
-deploy:
+  deploy:
     runs-on: ubuntu-latest
     needs: build_and_push_to_docker_hub
     steps:
@@ -95,15 +95,14 @@ deploy:
             sudo docker compose exec web python manage.py collectstatic --no-input
             sudo docker compose exec web python manage.py runscript load_ingredients
 
-
   send_message:
     name: Telegram - Send message
     runs-on: ubuntu-latest
     needs: deploy
     steps:
-    - name: send message
-      uses: appleboy/telegram-action@master
-      with:
-        to: ${{ secrets.TELEGRAM_TO }}
-        token: ${{ secrets.TELEGRAM_TOKEN }}
-        message: ${{ github.workflow }} успешно выполнен!
+      - name: Send message
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.TELEGRAM_TO }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: Деплой foodgram успешно выполнен! Коммит сделал ${{ github.actor }} с сообщением "${{ github.event.commits[0].message }}". Ссылка на коммит https://github.com/${{ github.repository }}/commit/${{github.sha}}.
