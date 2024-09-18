@@ -17,7 +17,7 @@ if not SECRET_KEY:
 
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
-ALLOWED_HOSTS = ['89.169.172.126', 'localhost', '127.0.0.1', 'foodgram.webhop.me']
+ALLOWED_HOSTS = ['89.169.172.126', 'localhost', '127.0.0.1', 'foodgram.webhop.me', '*']
 
 
 INSTALLED_APPS = [
@@ -49,7 +49,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "api_foodgram.urls"
+ROOT_URLCONF = "foodgram.urls"
 
 TEMPLATES = [
     {
@@ -67,22 +67,39 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = "api_foodgram.wsgi.application"
+WSGI_APPLICATION = "foodgram.wsgi.application"
+
 
 DATABASES = {
     "default": {
-        "ENGINE": os.getenv(
-            "DB_ENGINE", default="django.db.backends.postgresql"
-        ),
-        "NAME": os.getenv("DB_NAME", default="foodgram"),
-        "USER": os.getenv("POSTGRES_USER", default="foodgram_user"),
-        "PASSWORD": os.getenv(
-            "POSTGRES_PASSWORD", default="Q4jf8Ynlsnfjhh3g2358gb34g5ndlp4"
-        ),
-        "HOST": os.getenv("DB_HOST", default="db"),
+        "ENGINE": os.getenv("DB_ENGINE", default="django.db.backends.postgresql"),
+        "NAME": os.getenv("DB_NAME", default="postgres"),
+        "USER": os.getenv("POSTGRES_USER", default="postgres"),
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD", default="postgres"),
+        "HOST": os.getenv("DB_HOST", default=""),
         "PORT": os.getenv("DB_PORT", default="5432"),
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': os.getenv('POSTGRES_DB', 'postgres'),
+#         'USER': os.getenv('POSTGRES_USER', 'postgres'),
+#         'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
+#         'HOST': os.getenv('DB_HOST', 'db'),
+#         'PORT': os.getenv('DB_PORT', 5432),
+#     }
+# }
+
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+#     }
+# }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {
@@ -104,7 +121,7 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 
-LANGUAGE_CODE = "ru"
+LANGUAGE_CODE = "ru-RU"
 
 TIME_ZONE = "UTC"
 
@@ -113,10 +130,6 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/2.2/howto/static-files/
 
 STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
@@ -141,13 +154,15 @@ REST_FRAMEWORK = {
 DJOSER = {
     "LOGIN_FIELD": "email",
     "HIDE_USERS": False,
+    "PASSWORD_CHANGED_EMAIL_CONFIRMATION": False,
+    "TOKEN_MODEL": "rest_framework.authtoken.models.Token",
     "SERIALIZERS": {
         "user": "api.serializers.CustomUserSerializer",
+        "user_create": "api.serializers.CustomCreateUserSerializer",
         "current_user": "api.serializers.CustomUserSerializer",
-        "user_create": "api.serializers.CustomUserCreateSerializer",
     },
     "PERMISSIONS": {
-        "user": ("rest_framework.permissions.IsAuthenticated",),
+        "user": ("djoser.permissions.CurrentUserOrAdminOrReadOnly",),
         "user_list": ("rest_framework.permissions.AllowAny",),
     },
 }
