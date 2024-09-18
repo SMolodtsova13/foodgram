@@ -62,7 +62,7 @@ jobs:
             push: true
             tags: smolodtsova13/foodgram_backend:latest
 
- deploy:
+  deploy:
     runs-on: ubuntu-latest
     needs: build_and_push_to_docker_hub
     steps:
