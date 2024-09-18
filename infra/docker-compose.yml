@@ -1,25 +1,83 @@
-# volumes:
-#   pg_data:
-#   media:
-#   static:
-
-
 services:
+  db:
+    image: postgres:13
+    restart: always
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-postgres}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
+      - POSTGRES_DB=${POSTGRES_DB:-postgres}
+    volumes:
+      - database:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    command: gunicorn foodgram.wsgi:application --bind 0.0.0.0:8000
+    depends_on:
+      - db
+    volumes:
+      - staticfiles:/static
+    expose:
+      - 8000
+    networks:
+      - app-network
 
   frontend:
-    container_name: foodgram-front
-    build: ../frontend
-    volumes:
-      - ../frontend/:/app/result_build/
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile
+    depends_on:
+      - backend
+    expose:
+      - 3000
+    networks:
+      - app-network
+
   nginx:
-    container_name: foodgram-proxy
-    image: nginx:1.25.4-alpine
+    build:
+      context: ../infra
+      dockerfile: Dockerfile
+    depends_on:
+      - backend
+      - frontend
     ports:
-      - "80:80"
+      - 80:80
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ../frontend/build:/usr/share/nginx/html/
-      - ../docs/:/usr/share/nginx/html/api/docs/
+      - staticfiles:/var/www/static
+    networks:
+      - app-network
+
+volumes:
+  database:
+  staticfiles:
+
+networks:
+  app-network:
+
+
+
+
+
+
+# services:
+
+#   frontend:
+#     container_name: foodgram-front
+#     build: ../frontend
+#     volumes:
+#       - ../frontend/:/app/result_build/
+#   nginx:
+#     container_name: foodgram-proxy
+#     image: nginx:1.25.4-alpine
+#     ports:
+#       - "80:80"
+#     volumes:
+#       - ./nginx.conf:/etc/nginx/conf.d/default.conf
+#       - ../frontend/build:/usr/share/nginx/html/
+#       - ../docs/:/usr/share/nginx/html/api/docs/
 
 
 # services:
@@ -76,6 +134,3 @@ services:
 # #       - ./nginx.conf:/etc/nginx/conf.d/default.conf
 # #       - ../frontend/build:/usr/share/nginx/html/
 # #       - ../docs/:/usr/share/nginx/html/api/docs/
-
-
-
