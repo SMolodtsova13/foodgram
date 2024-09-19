@@ -1,6 +1,18 @@
+volumes:
+  postgres_data:
+  static_value:
+  media_value:
+  data_value:
+
 services:
+
   db:
     image: postgres:13.0-alpine
+    restart: always
+    environment:
+      - POSTGRES_USER=foodgram_user
+      - POSTGRES_PASSWORD=foodgram_password
+      - POSTGRES_DB=postgres
     volumes:
       - postgres_data:/var/lib/postgresql/data/
     env_file:
@@ -19,8 +31,8 @@ services:
       - data_value:/app/data/
       - static_value:/app/static/
       - media_value:/app/media/
-    expose:
-      - 8000
+    # expose:
+    #   - 8000
     env_file:
       - ./.env
 
@@ -48,9 +60,3 @@ services:
     depends_on:
       - backend
       - frontend
-
-volumes:
-  postgres_data:
-  static_value:
-  media_value:
-  data_value:

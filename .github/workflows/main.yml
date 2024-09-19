@@ -35,9 +35,9 @@ jobs:
         
     - name: Test with flake8
       env:
-        POSTGRES_USER: django_user
-        POSTGRES_PASSWORD: django_password
-        POSTGRES_DB: django_db
+        POSTGRES_USER: foodgram_user
+        POSTGRES_PASSWORD: foodgram_password
+        POSTGRES_DB: postgres
         DB_HOST: 127.0.0.1
         DB_PORT: 5432
       id: run_flake8
