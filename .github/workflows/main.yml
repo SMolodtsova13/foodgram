@@ -13,8 +13,8 @@ jobs:
       postgres:
         image: postgres:13
         env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_USER: foodgram_user
+          POSTGRES_PASSWORD: foodgram_password
           POSTGRES_DB: postgres
         ports:
           - 5432:5432
@@ -79,7 +79,7 @@ jobs:
         with:
           context: ./backend
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_back:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
           
       - name: Push frontend to Docker Hub
         id: push_frontend
@@ -87,7 +87,7 @@ jobs:
         with:
           context: ./frontend
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_front:latest
+          tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:latest
           
       - name: Send message if build_and_push_to_docker_hub failed
         if: ${{ failure() }}
