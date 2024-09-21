@@ -1,6 +1,7 @@
 import os
 
 from django.core.management.utils import get_random_secret_key
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -14,7 +15,9 @@ SECRET_KEY = os.getenv(
 if not SECRET_KEY:
     SECRET_KEY = get_random_secret_key()
 
-DEBUG = os.getenv('DEBUG', 'False') == 'True'
+# DEBUG = os.getenv('DEBUG', 'False') == 'True'
+
+DEBUG = False
 
 ALLOWED_HOSTS = ['89.169.172.126', 'localhost', '127.0.0.1', 'foodgram.webhop.me', '*']
 
@@ -29,8 +32,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework.authtoken",
-    "colorfield",
     "djoser",
+    "colorfield",
     "drf_yasg",
     "django_filters",
     "api.apps.ApiConfig",
@@ -130,8 +133,8 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticatedOrReadOnly",
     ],
-    "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.TokenAuthentication",
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
     ],
     "SEARCH_PARAM": "name",
     "DEFAULT_PAGINATION_CLASS": "api.pagination.LimitPagination",
@@ -141,15 +144,15 @@ REST_FRAMEWORK = {
 DJOSER = {
     "LOGIN_FIELD": "email",
     "HIDE_USERS": False,
-    "PASSWORD_CHANGED_EMAIL_CONFIRMATION": False,
-    "TOKEN_MODEL": "rest_framework.authtoken.models.Token",
     "SERIALIZERS": {
+        "user_create": "api.serializers.CustomUserCreateSerializer",
         "user": "api.serializers.CustomUserSerializer",
-        "user_create": "api.serializers.CustomCreateUserSerializer",
         "current_user": "api.serializers.CustomUserSerializer",
     },
     "PERMISSIONS": {
         "user": ("djoser.permissions.CurrentUserOrAdminOrReadOnly",),
-        "user_list": ("rest_framework.permissions.AllowAny",),
+        'user_list': ['rest_framework.permissions.IsAuthenticatedOrReadOnly'],
+        'token_create': ['rest_framework.permissions.AllowAny'],
+        'token_destroy': ['rest_framework.permissions.IsAuthenticated'],
     },
 }

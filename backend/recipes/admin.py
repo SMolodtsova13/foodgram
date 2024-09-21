@@ -11,7 +11,7 @@ class TagAdmin(admin.ModelAdmin):
 
 
 class IngredientAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'unit_of_measurement')
+    list_display = ('id', 'name', 'measurement_unit')
     list_filter = ('name',)
     empty_value_display = 'Поле не заполнено'
 

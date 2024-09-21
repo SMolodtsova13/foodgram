@@ -6,6 +6,7 @@ from recipes.constants import NAME_MAX_LENGTH, EMAIL_MAX_LENGTH
 
 
 def validate_username(username):
+    """Проверка username."""
     pattern = r'^[\w.@+-]+\Z'
 
     if len(username) > NAME_MAX_LENGTH:
@@ -21,6 +22,7 @@ def validate_username(username):
 
 
 def validate_email(email):
+    """Проверка длины email."""
     if len(email) > EMAIL_MAX_LENGTH:
         raise ValidationError(
             f'Длина email больше допустимого - {EMAIL_MAX_LENGTH}!'

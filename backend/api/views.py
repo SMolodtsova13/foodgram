@@ -8,7 +8,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.filters import SearchFilter
 from rest_framework.decorators import action
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
 from api.serializers import (IngredientSerializer, FollowSerializer,
@@ -25,13 +25,35 @@ from users.models import Follow
 
 User = get_user_model()
 
-
 class UserViewSet(viewsets.ModelViewSet):
     """ViewSet для управления пользователями."""
 
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
-    permission_classes = (IsAuthenticated,)
+    permission_classes = (IsAuthorOrReadOnlyPermission, )
+
+    def generic_create(self, serializer, klass, outer_field):
+        """Generic create an authenticated user."""
+
+        data = {
+            outer_field: get_object_or_404(klass, id=self.kwargs['pk']).id,
+            'user': self.request.user.id,
+        }
+        serializer = serializer(data=data, context={'request': self.request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def generic_delete(self, klass, outer_klass, outer_field):
+        """Generic delete for an authenticated user."""
+
+        obj = get_object_or_404(klass, **{
+            'user': self.request.user,
+            outer_field: get_object_or_404(outer_klass, id=self.kwargs['pk']),
+        })
+        obj.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
     def get_queryset(self):
         return self.request.user

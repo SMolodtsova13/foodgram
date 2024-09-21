@@ -11,7 +11,6 @@ User = get_user_model()
 
 class Tag(models.Model):
     """Модель тега."""
-
     name = models.CharField('Название тега',
                             max_length=NAME_MAX_LENGTH_RECIPES,
                             unique=True)
@@ -34,7 +33,7 @@ class Ingredient(models.Model):
 
     name = models.CharField('Название ингредиента',
                             max_length=NAME_MAX_LENGTH_RECIPES)
-    unit_of_measurement = models.CharField(
+    measurement_unit = models.CharField(
         'Единица измерения', max_length=MAX_LENGTH_RECIPES_UNIT_MEASUREMENT
     )
 
@@ -44,7 +43,7 @@ class Ingredient(models.Model):
         verbose_name_plural = 'Ингредиенты'
         constraints = (
             models.UniqueConstraint(
-                fields=('name', 'unit_of_measurement'),
+                fields=('name', 'measurement_unit'),
                 name="unique_ingredient",
             ),
         )

@@ -54,6 +54,7 @@ class CustomUserSerializer(UserSerializer):
     """Получение списка пользователей и конкретного пользователя."""
 
     is_subscribed = serializers.SerializerMethodField()
+    password = serializers.CharField(write_only=True, max_length=150)
 
     class Meta:
         model = User
@@ -62,6 +63,7 @@ class CustomUserSerializer(UserSerializer):
                   'username',
                   'first_name',
                   'last_name',
+                  'password',
                   'is_subscribed',)
 
     def get_is_subscribed(self, obj):
@@ -70,6 +72,9 @@ class CustomUserSerializer(UserSerializer):
         if user.is_anonymous:
             return False
         return Follow.objects.filter(user=user, author=obj.id).exists()
+
+    def create(self, validated_data):
+        return User.objects.create_user(**validated_data)
 
 
 class FollowSerializer(serializers.ModelSerializer):
@@ -118,7 +123,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ingredient
-        fields = ('id', 'name', 'unit_of_measurement')
+        fields = ('id', 'name', 'measurement_unit')
 
 
 class IngredientsRecipeSerializer(serializers.ModelSerializer):
@@ -126,13 +131,13 @@ class IngredientsRecipeSerializer(serializers.ModelSerializer):
 
     id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
-    unit_of_measurement = serializers.ReadOnlyField(
-        source='ingredient.unit_of_measurement'
+    measurement_unit = serializers.ReadOnlyField(
+        source='ingredient.measurement_unit'
     )
 
     class Meta:
         model = IngredientRecipe
-        fields = ('id', 'name', 'unit_of_measurement', 'volume')
+        fields = ('id', 'name', 'measurement_unit', 'volume')
         validators = UniqueTogetherValidator(
             queryset=IngredientRecipe.objects.all(), fields=('ingredient',
                                                              'recipes'),

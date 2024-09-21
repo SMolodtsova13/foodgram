@@ -1,4 +1,4 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.db import models
 from django.db.models import UniqueConstraint
 
@@ -34,8 +34,8 @@ class FoodgramUser(AbstractUser):
                             choices=UserRoles.choices,
                             max_length=NAME_MAX_LENGTH,
                             default=UserRoles.USER)
-    password = models.CharField(blank=False,
-                                max_length=EMAIL_MAX_LENGTH)
+
+    objects = UserManager()
 
     class Meta:
         ordering = ('id',)
