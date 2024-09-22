@@ -1,6 +1,9 @@
 import csv
 from http.client import HTTPResponse
 from io import StringIO
+import json
+
+from djoser.views import UserViewSet
 
 from django.contrib.auth import get_user_model
 from django.http import Http404, StreamingHttpResponse
@@ -20,46 +23,37 @@ from api.permissions import IsAuthorOrReadOnlyPermission
 from api.pagination import LimitPagination
 from recipes.models import (IngredientRecipe, Tag, Ingredient,
                             Favourites, Recipe, ShoppingList)
-from users.models import Follow
+from users.models import Follow, DEFAULT_AVATAR
 
 
 User = get_user_model()
 
-class UserViewSet(viewsets.ModelViewSet):
-    """ViewSet для управления пользователями."""
 
-    queryset = User.objects.all()
-    serializer_class = CustomUserSerializer
-    permission_classes = (IsAuthorOrReadOnlyPermission, )
+class FoodgramUserViewSet(UserViewSet):
+    pagination_class = LimitPagination
 
-    def generic_create(self, serializer, klass, outer_field):
-        """Generic create an authenticated user."""
+    @action(detail=False,
+            methods=('PUT', 'DELETE',),
+            url_path='me/avatar',
+            permission_classes=[IsAuthenticated])
+    def avatar(self, request):
+        user = self.request.user
+        if request.method == 'PUT':
+            serializer = CustomUserSerializer(user,
+                                              data=request.data,
+                                              partial=True)
+            serializer.is_valid()
+            serializer.save()
+            return Response(
+                {'avatar': request.build_absolute_uri(user.avatar.url)},
+                status=status.HTTP_200_OK
+            )
 
-        data = {
-            outer_field: get_object_or_404(klass, id=self.kwargs['pk']).id,
-            'user': self.request.user.id,
-        }
-        serializer = serializer(data=data, context={'request': self.request})
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        elif request.method == 'DELETE':
+            self.request.user.avatar = DEFAULT_AVATAR
+            self.request.user.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def generic_delete(self, klass, outer_klass, outer_field):
-        """Generic delete for an authenticated user."""
-
-        obj = get_object_or_404(klass, **{
-            'user': self.request.user,
-            outer_field: get_object_or_404(outer_klass, id=self.kwargs['pk']),
-        })
-        obj.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-    def get_queryset(self):
-        return self.request.user
-
-    def perform_update(self, serializer):
-        serializer.save(user=self.request.user)
 
     @action(detail=False, methods=('GET',))
     def subscriptions(self, request):

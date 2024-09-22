@@ -12,6 +12,7 @@ class UserRoles(models.TextChoices):
 
 max_length = max(len(role) for role in UserRoles.choices)
 
+DEFAULT_AVATAR = 'users/avatar_default.jpg'
 
 class FoodgramUser(AbstractUser):
     """Кастомная модель пользователей."""
@@ -34,6 +35,11 @@ class FoodgramUser(AbstractUser):
                             choices=UserRoles.choices,
                             max_length=NAME_MAX_LENGTH,
                             default=UserRoles.USER)
+    avatar = models.ImageField('Аватар профиля',
+                               upload_to='users',
+                               blank=True,
+                               null=True,
+                               default=DEFAULT_AVATAR)
 
     objects = UserManager()
 

@@ -1,5 +1,8 @@
+import base64
+
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
+from django.core.files.base import ContentFile
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import exceptions, serializers
@@ -10,7 +13,19 @@ from users.models import Follow
 from recipes.models import (Tag, Favourites, Ingredient,
                             Recipe, IngredientRecipe, ShoppingList)
 
+
 User = get_user_model()
+
+
+class Base64ImageField(serializers.ImageField):
+    def to_internal_value(self, data):
+        if isinstance(data, str) and data.startswith('data:image'):
+            format, imgstr = data.split(';base64,')
+            ext = format.split('/')[-1]
+
+            data = ContentFile(base64.b64decode(imgstr), name='temp.' + ext)
+
+        return super().to_internal_value(data)
 
 
 class UserValidationMixin:
@@ -24,17 +39,17 @@ class UserValidationMixin:
 
 class CustomUserCreateSerializer(UserCreateSerializer, UserValidationMixin):
     """Создание пользователя foodgram."""
-
     email = serializers.EmailField()
     username = serializers.CharField()
 
     class Meta:
         model = User
-        fields = ('email',
+        fields = ('id',
+                  'email',
                   'username',
                   'first_name',
                   'last_name',
-                  'password')
+                  'password',)
 
     def validate(self, user_data):
         email = user_data.get('email')
@@ -54,7 +69,7 @@ class CustomUserSerializer(UserSerializer):
     """Получение списка пользователей и конкретного пользователя."""
 
     is_subscribed = serializers.SerializerMethodField()
-    password = serializers.CharField(write_only=True, max_length=150)
+    avatar = Base64ImageField(required=False, allow_null=True)
 
     class Meta:
         model = User
@@ -63,8 +78,8 @@ class CustomUserSerializer(UserSerializer):
                   'username',
                   'first_name',
                   'last_name',
-                  'password',
-                  'is_subscribed',)
+                  'is_subscribed',
+                  'avatar',)
 
     def get_is_subscribed(self, obj):
         """Проверка подписки пользователя"""
@@ -72,9 +87,6 @@ class CustomUserSerializer(UserSerializer):
         if user.is_anonymous:
             return False
         return Follow.objects.filter(user=user, author=obj.id).exists()
-
-    def create(self, validated_data):
-        return User.objects.create_user(**validated_data)
 
 
 class FollowSerializer(serializers.ModelSerializer):
@@ -202,7 +214,6 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         """Обновление рецепта"""
-
         if 'ingredients' in validated_data:
             ingredients = validated_data['ingredients']
             instance.ingredients.clear()
@@ -239,6 +250,7 @@ class FavoritesSerializer(serializers.ModelSerializer):
 
 class ShoppingListSerializer(serializers.ModelSerializer):
     """Сериализатор модели Список Покупок."""
+
     id = serializers.ReadOnlyField(source='recipe.id')
     name = serializers.ReadOnlyField(source='recipe.name')
     image = Base64ImageField(source='recipe.image', read_only=True)
