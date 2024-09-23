@@ -80,6 +80,13 @@ class Recipe(models.Model):
     )
     image = models.ImageField('Изображение для рецепта',
                               upload_to='recipes/')
+    
+    short_url = models.CharField(
+        max_length=20,
+        unique=True,
+        db_index=True,
+        blank=True
+    )
 
     class Meta:
         ordering = ('-pub_date',)
@@ -169,7 +176,7 @@ class ShoppingList(models.Model):
         verbose_name = 'Корзина'
         verbose_name_plural = 'Корзина'
         constraints = (models.UniqueConstraint(
-            fields=("user", "recipe"), name="unique_shopping_list_recipe"
+            fields=('user', 'recipe'), name='unique_shopping_list_recipe'
         ),)
 
         constraints = (models.UniqueConstraint(

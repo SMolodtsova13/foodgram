@@ -8,15 +8,19 @@ User = get_user_model()
 
 class RecipeFilter(FilterSet):
     """Фильтр рецептов по автору, списку покупок, тегам, избранному."""
-
-    is_favorited = filters.BooleanFilter(method='filter_is_favorited')
+    
+    is_favorited = filters.BooleanFilter(method='filter_is_favorited',
+                                         label='Избранное')
     is_in_shopping_cart = filters.BooleanFilter(
-        method='filter_in_shopping_list'
+        method='filter_in_shopping_list', label='Список покупок'
     )
-    author = filters.ModelChoiceFilter(queryset=User.objects.all())
+    author = filters.ModelChoiceFilter(queryset=User.objects.all(),
+                                       field_name='author__id',
+                                       to_field_name='ud',)
     tags = filters.ModelMultipleChoiceFilter(field_name='tags__slug',
                                              to_field_name='slug',
-                                             queryset=Tag.objects.all())
+                                             queryset=Tag.objects.all(),
+                                             conjoined=False)
 
     def filter_is_favorited(self, queryset, name, value):
         if value:

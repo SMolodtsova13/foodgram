@@ -2,7 +2,9 @@ from django.urls import include, path, re_path
 from rest_framework import routers
 
 from api.views import (IngredientViewSet, TagViewSet,
-                       RecipeViewSet, FoodgramUserViewSet)
+                       RecipeViewSet, FoodgramUserViewSet,
+                       redirect_to_full_recipe
+                       )
 
 app_name = 'api'
 

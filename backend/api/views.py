@@ -5,9 +5,9 @@ from io import StringIO
 from djoser.views import UserViewSet
 
 from django.contrib.auth import get_user_model
-from django.http import Http404, StreamingHttpResponse
+from django.http import Http404, StreamingHttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
-from rest_framework import status, viewsets
+from rest_framework import status, viewsets, serializers
 from rest_framework.filters import SearchFilter
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
@@ -33,7 +33,7 @@ User = get_user_model()
 class FoodgramUserViewSet(UserViewSet):
     """Вьюсет пользователя."""
 
-    pagination_class = LimitPagination
+    pagination_class = LimitOffsetPagination
 
     @action(detail=False,
             methods=('PUT', 'DELETE',),
@@ -62,33 +62,45 @@ class FoodgramUserViewSet(UserViewSet):
             self.request.user.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=False, methods=('GET',))
+    @action(detail=False, methods=('GET',),
+            url_path='subscriptions',
+            url_name='subscriptions')
     def subscriptions(self, request):
         """Просмотр подписок пользователя."""
         user = self.request.user
-        queryset = Follow.objects.filter(user=user).select_related('author')
-        serializer = FollowSerializer(queryset,
+        queryset = [f.author for f in Follow.objects.filter(user=user)]
+        pages = self.paginate_queryset(queryset)
+        serializer = FollowSerializer(pages,
                                       many=True,
                                       context={'request': request})
-        return Response(serializer.data)
+        return self.get_paginated_response(serializer.data)
 
     @action(detail=True, methods=('POST', 'DELETE',))
     def subscribe(self, request, id=None):
         """Подписка на автора."""
         user = self.request.user
         author = get_object_or_404(User, id=id)
+
         if user == author:
-            return Response({'errors': 'Нельзя отписаться от себя!'},
-                            status=status.HTTP_400_BAD_REQUEST)
-        if Follow.objects.filter(user=user, author=author).exists():
-            return Response({'errors': 'Подписка уже оформлена!'},
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {'errors': 'Нельзя подписаться/отписаться от себя!'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         if request.method == 'POST':
-            queryset = Follow.objects.create(author=author, user=user)
-            serializer = FollowSerializer(queryset,
-                                          context={'request': request})
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            if Follow.objects.filter(user=user, author=author).exists():
+                return Response({'errors': 'Подписка уже оформлена!'},
+                                status=status.HTTP_400_BAD_REQUEST)
+
+            if request.method == 'POST':
+                follow = Follow.objects.create(author=author, user=user)
+                serializer = FollowSerializer(follow.author,
+                                              context={'request': request})
+                return Response(data=serializer.data,
+                                status=status.HTTP_201_CREATED)
+
         if request.method == 'DELETE':
+
             if not Follow.objects.filter(user=user, author=author).exists():
                 return Response({'errors': 'Вы уже отписались!'},
                                 status=status.HTTP_400_BAD_REQUEST)
@@ -175,12 +187,18 @@ class IngredientViewSet(CustomReadOnlyModelViewSet):
     search_fields = ('^name',)
 
 
+def redirect_to_full_recipe(request, short_url):
+    recipe = get_object_or_404(Recipe, short_url=short_url)
+    full_url = f'/recipes/{recipe.id}'
+    return HttpResponseRedirect(full_url)
+
+
 class RecipeViewSet(viewsets.ModelViewSet):
     """ViewSet для управления рецептами."""
     queryset = Recipe.objects.all()
+    # filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
     permission_classes = (IsAuthorOrReadOnlyPermission,)
-
 
     def get_serializer_class(self):
         """Метод для вызова определенного сериализатора. """
@@ -221,7 +239,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             'attachment; filename="shoppinglist.txt"'
         )
         return response
-    
+
     @action(methods=('DELETE',), detail=True,
             permission_classes=(IsAuthorPermission,))
     def delete_recipe(self, request, pk=None):
@@ -230,10 +248,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
         except Recipe.DoesNotExist:
             raise Http404
         if request.user != recipe.author:
-            return Response({'error': 'You cannot delete this recipe.'},
+            return Response({'error': 'Вы не можете удалить данный рецепт .'},
                             status=status.HTTP_403_FORBIDDEN)
         recipe.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(methods=('GET',), detail=True, url_path='get-link')
+    def get_link(self, request, pk=None):
+        """Получение короткой ссылки на рецепт."""
+        recipe = self.get_object()
+        short_link = request.build_absolute_uri(f'/{recipe.short_url}')
+        data = {'short-link': short_link}
+        return Response(data, status=status.HTTP_200_OK)
 
 
 class ShoppingViewSet(viewsets.ModelViewSet):
@@ -266,8 +292,15 @@ class ShoppingViewSet(viewsets.ModelViewSet):
             recipe = Recipe.objects.get(id=pk)
         except Recipe.DoesNotExist:
             raise Http404
-        ShoppingList.objects.filter(user=request.user, recipes=recipe).delete()
+        delete_recipe, _ = ShoppingList.objects.filter(
+            user=request.user, recipes=recipe
+            ).delete()
+        if not delete_recipe:
+            raise serializers.ValidationError(
+                'Невозможно удалить рецепт из корзины, которого нет!'
+            )
         return Response(status=status.HTTP_204_NO_CONTENT)
+
 
     @action(methods=('GET',), detail=False)
     def download_shopping_list(self, request):
@@ -315,8 +348,21 @@ class RecipeFavoritesViewSet(viewsets.ModelViewSet):
     def remove_favorite(self, request, pk=None):
         """Удаление рецепта из избранного."""
         recipe = get_object_or_404(Recipe, id=pk)
-        Favourites.objects.filter(user=request.user, recipes=recipe).delete()
+        delete_recipe, _ = Favourites.objects.filter(
+            user=request.user, recipes=recipe
+            ).delete()
+        if not delete_recipe:
+            raise serializers.ValidationError(
+                'Невозможно удалить рецепт из избранного, которого нет!'
+            )
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    # @action(methods=('DELETE',), detail=False)
+    # def delete_favorite(self, request, pk=None):
+    #     """Удаление рецепта из избранного."""
+    #     recipe = get_object_or_404(Recipe, id=pk)
+    #     Favourites.objects.filter(user=request.user, recipes=recipe).delete()
+    #     return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=('GET',))
     def favorite_recipes(self, request):

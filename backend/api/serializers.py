@@ -1,4 +1,5 @@
 import base64
+from sqids import Sqids
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
@@ -88,37 +89,42 @@ class CustomUserSerializer(UserSerializer):
         return Follow.objects.filter(user=user, author=obj.id).exists()
 
 
-class FollowSerializer(serializers.ModelSerializer):
+class FollowSerializer(CustomUserSerializer):
     """Подписки."""
-
-    id = serializers.ReadOnlyField(source='author.id')
-    email = serializers.ReadOnlyField(source='author.email')
-    username = serializers.ReadOnlyField(source='author.username')
-    first_name = serializers.ReadOnlyField(source='author.first_name')
-    last_name = serializers.ReadOnlyField(source='author.last_name')
-    is_subscribed = serializers.SerializerMethodField(read_only=True)
-    recipes_count = serializers.SerializerMethodField(read_only=True)
+    recipes_count = serializers.SerializerMethodField(
+        read_only=True,
+        method_name='get_recipes_count')
     recipes = serializers.SerializerMethodField(read_only=True,
-                                                source='author.recipes')
+                                                method_name='get_recipes')
 
     class Meta:
-        model = Follow
+        model = User
         fields = ('id',
                   'email',
                   'username',
                   'first_name',
                   'last_name',
                   'is_subscribed',
+                  'avatar',
                   'recipes',
                   'recipes_count')
 
-    def get_is_subscribed(self, obj):
-        """Проверка подписки пользователя на автора."""
-        return Follow.objects.filter(user=obj.user, author=obj.author).exists()
+    # def get_is_subscribed(self, obj):
+    #     """Проверка подписки пользователя на автора."""
+    #     return Follow.objects.filter(user=obj.user, author=obj.author).exists()
+    def get_recipes(self, obj):
+        """Метод для получения рецептов"""
+        request = self.context.get('request')
+        all_recipes = obj.recipes.all()
+        recipes_limit = request.query_params.get('recipes_limit')
+        if recipes_limit:
+            all_recipes = all_recipes[:int(recipes_limit)]
+        return ShortRecipeSerializer(all_recipes, many=True).data
 
     def get_recipes_count(self, obj):
+        print("get_recipes_count")
         """Количество рецептов автора."""
-        return Recipe.objects.filter(author=obj.author).count()
+        return obj.recipes.count()
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -265,6 +271,12 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         tags = validated_data.pop('tags')
         recipe = Recipe.objects.create(**validated_data)
 
+        keys_for_short_url = [recipe.id, len(ingredients), recipe.cooking_time]
+        sqids = Sqids()
+        code = sqids.encode(keys_for_short_url)
+        recipe.short_url = code
+        recipe.save()
+
         self.__create_ingredients(ingredients, recipe)
         self.__create_tags(tags, recipe)
         return recipe
@@ -278,6 +290,16 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         self.__create_tags(validated_data.pop('tags'), instance)
 
         return super().update(instance, validated_data)
+
+
+class ShortRecipeSerializer(serializers.ModelSerializer):
+    """Дополнительный сериализатор для рецептов """
+
+    class Meta:
+        """Мета-параметры сериализатора"""
+
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class RecipeSerializer(serializers.ModelSerializer):
