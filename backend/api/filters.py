@@ -14,9 +14,9 @@ class RecipeFilter(FilterSet):
         method='filter_in_shopping_list'
     )
     author = filters.ModelChoiceFilter(queryset=User.objects.all())
-    tags = ModelMultipleChoiceFilter(field_name='tags__slug',
-                                     to_field_name='slug',
-                                     queryset=Tag.objects.all())
+    tags = filters.ModelMultipleChoiceFilter(field_name='tags__slug',
+                                             to_field_name='slug',
+                                             queryset=Tag.objects.all())
 
     def filter_is_favorited(self, queryset, name, value):
         if value:

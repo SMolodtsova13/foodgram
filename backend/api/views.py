@@ -1,7 +1,6 @@
 import csv
 from http.client import HTTPResponse
 from io import StringIO
-import json
 
 from djoser.views import UserViewSet
 
@@ -14,22 +13,26 @@ from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
+
 from api.serializers import (IngredientSerializer, FollowSerializer,
                              RecipeSerializer, CustomUserSerializer,
                              FavoritesSerializer, ShoppingListSerializer,
-                             TagSerializer)
+                             TagSerializer, CreateRecipeSerializer)
 from api.filters import RecipeFilter
-from api.permissions import IsAuthorOrReadOnlyPermission
+from api.permissions import IsAuthorOrReadOnlyPermission, IsAuthorPermission
 from api.pagination import LimitPagination
 from recipes.models import (IngredientRecipe, Tag, Ingredient,
                             Favourites, Recipe, ShoppingList)
 from users.models import Follow, DEFAULT_AVATAR
 
+from rest_framework.pagination import LimitOffsetPagination
 
 User = get_user_model()
 
 
 class FoodgramUserViewSet(UserViewSet):
+    """Вьюсет пользователя."""
+
     pagination_class = LimitPagination
 
     @action(detail=False,
@@ -37,23 +40,27 @@ class FoodgramUserViewSet(UserViewSet):
             url_path='me/avatar',
             permission_classes=[IsAuthenticated])
     def avatar(self, request):
+        """Добавление/удаление аватара."""
         user = self.request.user
         if request.method == 'PUT':
             serializer = CustomUserSerializer(user,
                                               data=request.data,
                                               partial=True)
-            serializer.is_valid()
+            if 'avatar' not in request.data:
+                return Response({'avatar': ['Это поле обязательно.']},
+                                status=status.HTTP_400_BAD_REQUEST)
+            if not serializer.is_valid():
+                return Response(serializer.errors,
+                                status=status.HTTP_400_BAD_REQUEST)
             serializer.save()
             return Response(
                 {'avatar': request.build_absolute_uri(user.avatar.url)},
                 status=status.HTTP_200_OK
             )
-
         elif request.method == 'DELETE':
-            self.request.user.avatar = DEFAULT_AVATAR
+            self.request.user.avatar = None
             self.request.user.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
-
 
     @action(detail=False, methods=('GET',))
     def subscriptions(self, request):
@@ -137,15 +144,30 @@ class FollowViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-class TagViewSet(viewsets.ReadOnlyModelViewSet):
+class CustomReadOnlyModelViewSet(viewsets.ReadOnlyModelViewSet):
+    """ReadOnly model viewset with presets."""
+
+    permission_classes = (AllowAny,)
+    pagination_class = None
+    http_method_names = ('get',)
+
+
+class TagViewSet(CustomReadOnlyModelViewSet):
     """Получение списка тегов, конкретного тега."""
-    permission_classes = (IsAuthorOrReadOnlyPermission,)
+
+    # permission_classes = (IsAuthorOrReadOnlyPermission)
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
 
+    # def has_permission(self, request, view):
+    #     if request.method in SAFE_METHODS:
+    #         return True
+    #     return bool(request.user and request.user.is_admin)
 
-class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+
+class IngredientViewSet(CustomReadOnlyModelViewSet):
     """Получение списка ингредиентов, конкретного ингредиента."""
+
     permission_classes = (IsAuthorOrReadOnlyPermission,)
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
@@ -155,11 +177,18 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     """ViewSet для управления рецептами."""
-
-    serializer_class = RecipeSerializer
     queryset = Recipe.objects.all()
     filterset_class = RecipeFilter
     permission_classes = (IsAuthorOrReadOnlyPermission,)
+
+
+    def get_serializer_class(self):
+        """Метод для вызова определенного сериализатора. """
+
+        if self.action in ('list', 'retrieve'):
+            return RecipeSerializer
+        elif self.action in ('create', 'partial_update'):
+            return CreateRecipeSerializer
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -192,6 +221,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
             'attachment; filename="shoppinglist.txt"'
         )
         return response
+    
+    @action(methods=('DELETE',), detail=True,
+            permission_classes=(IsAuthorPermission,))
+    def delete_recipe(self, request, pk=None):
+        try:
+            recipe = self.get_object()
+        except Recipe.DoesNotExist:
+            raise Http404
+        if request.user != recipe.author:
+            return Response({'error': 'You cannot delete this recipe.'},
+                            status=status.HTTP_403_FORBIDDEN)
+        recipe.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class ShoppingViewSet(viewsets.ModelViewSet):

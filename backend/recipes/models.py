@@ -95,18 +95,19 @@ class IngredientRecipe(models.Model):
 
     recipe = models.ForeignKey(Recipe,
                                on_delete=models.CASCADE,
+                               related_name='ingredient_list',
                                verbose_name='Рецепт')
     ingredient = models.ForeignKey(Ingredient,
                                    on_delete=models.CASCADE,
                                    verbose_name='Ингредиент')
-    volume = models.IntegerField(verbose_name='Количество ингридиентов',
+    amount = models.IntegerField(verbose_name='Количество ингридиентов',
                                  validators=(MinValueValidator(MIN_VALUE),))
 
     class Meta:
         verbose_name = 'Ингредиенты в рецепте'
         verbose_name_plural = 'Ингредиенты в рецепте'
         constraints = (models.UniqueConstraint(
-            fields=('ingredient', 'recipe', 'volume'),
+            fields=('ingredient', 'recipe', 'amount'),
             name='unique_ingredient_recipe_combination'
         ),)
 
