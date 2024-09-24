@@ -9,12 +9,13 @@ User = get_user_model()
 @admin.register(User)
 class FoodgramUserAdmin(admin.ModelAdmin):
     """Создание объекта пользователя в админ панели."""
-    list_display = ('username',
+                    
+    list_display = ('id',
+                    'username',
                     'email',
                     'role',
                     'first_name',
-                    'last_name',
-                    'id')
+                    'last_name')
     list_filter = ('email', 'username')
     search_fields = ('email', 'username')
     empty_value_display = 'Поле не заполнено'

@@ -1,28 +1,26 @@
-from djoser.views import UserViewSet
-from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Sum
 from django.contrib.auth import get_user_model
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
+from djoser.views import UserViewSet
 from rest_framework import status, viewsets, serializers
 from rest_framework.filters import SearchFilter
 from rest_framework.decorators import action
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
-
+from api.filters import RecipeFilter
 from api.serializers import (IngredientSerializer, FollowSerializer,
                              RecipeSerializer, CustomUserSerializer,
                              FavoritesSerializer, ShoppingListSerializer,
                              TagSerializer, CreateRecipeSerializer)
-from api.filters import RecipeFilter
 from api.permissions import IsAuthorOrReadOnlyPermission, IsAuthorPermission
 from api.pagination import LimitPagination
 from recipes.models import (IngredientRecipe, Tag, Ingredient,
                             Favourites, Recipe, ShoppingList)
 from users.models import Follow
-
-from rest_framework.pagination import LimitOffsetPagination
 
 User = get_user_model()
 
@@ -35,7 +33,7 @@ class FoodgramUserViewSet(UserViewSet):
     @action(detail=False,
             methods=('PUT', 'DELETE',),
             url_path='me/avatar',
-            permission_classes=[IsAuthenticated])
+            permission_classes=(IsAuthenticated,))
     def avatar(self, request):
         """Добавление/удаление аватара."""
         user = self.request.user
@@ -97,7 +95,6 @@ class FoodgramUserViewSet(UserViewSet):
                                 status=status.HTTP_201_CREATED)
 
         if request.method == 'DELETE':
-
             if not Follow.objects.filter(user=user, author=author).exists():
                 return Response({'errors': 'Вы уже отписались!'},
                                 status=status.HTTP_400_BAD_REQUEST)
@@ -164,14 +161,8 @@ class CustomReadOnlyModelViewSet(viewsets.ReadOnlyModelViewSet):
 class TagViewSet(CustomReadOnlyModelViewSet):
     """Получение списка тегов, конкретного тега."""
 
-    # permission_classes = (IsAuthorOrReadOnlyPermission)
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-
-    # def has_permission(self, request, view):
-    #     if request.method in SAFE_METHODS:
-    #         return True
-    #     return bool(request.user and request.user.is_admin)
 
 
 class IngredientViewSet(CustomReadOnlyModelViewSet):
@@ -208,7 +199,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    @action(methods=('DELETE',), detail=True,
+    @action(methods=('DELETE',), 
+            detail=True,
             permission_classes=(IsAuthorPermission,))
     def delete_recipe(self, request, pk=None):
         try:
@@ -216,7 +208,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         except Recipe.DoesNotExist:
             raise Http404
         if request.user != recipe.author:
-            return Response({'error': 'Вы не можете удалить данный рецепт .'},
+            return Response({'error': 'Вы не можете удалить данный рецепт.'},
                             status=status.HTTP_403_FORBIDDEN)
         recipe.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
@@ -282,7 +274,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 f"{ingredient['sum']}"
                 f"({ingredient['ingredient__measurement_unit']})\n"
             )
-
         return HttpResponse(result, content_type='text/plain')
     
     @action(methods=('POST', 'DELETE'),
@@ -345,13 +336,6 @@ class RecipeFavoritesViewSet(viewsets.ModelViewSet):
                 'Невозможно удалить рецепт из избранного, которого нет!'
             )
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-    # @action(methods=('DELETE',), detail=False)
-    # def delete_favorite(self, request, pk=None):
-    #     """Удаление рецепта из избранного."""
-    #     recipe = get_object_or_404(Recipe, id=pk)
-    #     Favourites.objects.filter(user=request.user, recipes=recipe).delete()
-    #     return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=('GET',))
     def favorite_recipes(self, request):

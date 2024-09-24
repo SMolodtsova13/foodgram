@@ -59,6 +59,3 @@ admin.site.register(Ingredient, IngredientAdmin)
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Favourites, FavouritesRecipeAdmin)
 admin.site.register(ShoppingList, ShoppingListAdmin)
-
-# admin.site.register(IngredientRecipe, RecipeIngredientAdmin)
-# admin.site.register(TagRecipe, RecipeIngredientAdmin)
