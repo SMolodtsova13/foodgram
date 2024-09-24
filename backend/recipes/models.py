@@ -80,7 +80,7 @@ class Recipe(models.Model):
     )
     image = models.ImageField('Изображение для рецепта',
                               upload_to='recipes/')
-    
+
     short_url = models.CharField(
         max_length=20,
         unique=True,
@@ -147,8 +147,10 @@ class Favourites(models.Model):
     """Модель избранного."""
 
     user = models.ForeignKey(User,
+                             related_name='favorites',
                              on_delete=models.CASCADE)
     recipe = models.ForeignKey(Recipe,
+                               related_name='favorites',
                                on_delete=models.CASCADE)
 
     class Meta:
@@ -170,6 +172,7 @@ class ShoppingList(models.Model):
     user = models.ForeignKey(User,
                              on_delete=models.CASCADE)
     recipe = models.ForeignKey(Recipe,
+                               related_name='shopping_recipe',
                                on_delete=models.CASCADE)
 
     class Meta:

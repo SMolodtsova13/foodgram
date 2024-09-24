@@ -109,9 +109,6 @@ class FollowSerializer(CustomUserSerializer):
                   'recipes',
                   'recipes_count')
 
-    # def get_is_subscribed(self, obj):
-    #     """Проверка подписки пользователя на автора."""
-    #     return Follow.objects.filter(user=obj.user, author=obj.author).exists()
     def get_recipes(self, obj):
         """Метод для получения рецептов"""
         request = self.context.get('request')
@@ -157,7 +154,7 @@ class IngredientsRecipeSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit', 'amount')
         validators = UniqueTogetherValidator(
             queryset=IngredientRecipe.objects.all(), fields=('ingredient',
-                                                             'recipes'),
+                                                             'recipe'),
         )
 
 
@@ -306,7 +303,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     """Сериализатор модели Рецепт."""
 
     author = CustomUserSerializer(read_only=True)
-    tags = TagSerializer(many=True, read_only=True)
+    tags = TagSerializer(many=True)
     ingredients = IngredientsRecipeSerializer(source='ingredient_list',
                                               many=True, read_only=True)
     is_favorited = serializers.SerializerMethodField()

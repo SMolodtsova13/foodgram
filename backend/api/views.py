@@ -1,11 +1,8 @@
-import csv
-from io import StringIO
-
 from djoser.views import UserViewSet
-
+from django_filters.rest_framework import DjangoFilterBackend
 from django.db.models import Sum
 from django.contrib.auth import get_user_model
-from django.http import Http404, HttpResponse, StreamingHttpResponse, HttpResponseRedirect
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets, serializers
 from rest_framework.filters import SearchFilter
@@ -196,7 +193,7 @@ def redirect_to_full_recipe(request, short_url):
 class RecipeViewSet(viewsets.ModelViewSet):
     """ViewSet для управления рецептами."""
     queryset = Recipe.objects.all()
-    # filter_backends = (DjangoFilterBackend,)
+    filter_backends = [DjangoFilterBackend]
     filterset_class = RecipeFilter
     permission_classes = (IsAuthorOrReadOnlyPermission,)
 
