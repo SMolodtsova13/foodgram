@@ -7,31 +7,29 @@ on:
 
 jobs:
   tests:
-    name: PEP8 check
     runs-on: ubuntu-latest
     services:
       postgres:
         image: postgres:13
         env:
-          POSTGRES_USER: foodgram_user
-          POSTGRES_PASSWORD: foodgram_password
-          POSTGRES_DB: postgres
+          POSTGRES_USER: django_user
+          POSTGRES_PASSWORD: django_password
+          POSTGRES_DB: django_db
         ports:
           - 5432:5432
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: 3.9
 
     - name: Install dependencies
-      id: run_install
       run: |
-        python -m pip install --upgrade pip 
-        pip install flake8 pep8-naming flake8-broken-line flake8-return flake8-isort
-        pip install -r ./backend/requirements.txt 
+        python -m pip install --upgrade pip
+        pip install flake8==6.0.0 flake8-isort==6.0.0
+        pip install -r ./backend/requirements.txt
         
     - name: Test with flake8
       env:
@@ -40,107 +38,59 @@ jobs:
         POSTGRES_DB: postgres
         DB_HOST: 127.0.0.1
         DB_PORT: 5432
-      id: run_flake8
       run: |
-        python -m flake8
-        
-    - name: Send message if Tests failed
-      if: ${{ failure() }}
-      uses: appleboy/telegram-action@master
-      with:
-        to: ${{ secrets.TELEGRAM_TO }}
-        token: ${{ secrets.TELEGRAM_TOKEN }}
-        message: |
-          Статус шага run_install - ${{ steps.run_install.outcome }}
-          Статус шага run_flake8 - ${{ steps.run_flake8.outcome }}
-          Ошибка при тестировании - ${{ github.repository }}
-          https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          
+        python -m flake8 backend/
+  
   build_and_push_to_docker_hub:
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
-    name: Push Docker image to Docker Hub
-    runs-on: ubuntu-latest
-    needs: tests
-    steps:
-      - name: Check out the repo
-        uses: actions/checkout@v2 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1 
-      - name: Login to Docker 
-        id: login_dockerhub
-        uses: docker/login-action@v1 
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-          
-      - name: Push backend to Docker Hub
-        id: push_backend
-        uses: docker/build-push-action@v2 
-        with:
-          context: ./backend
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
+      name: Push Docker image to DockerHub
+      runs-on: ubuntu-latest
+      needs: tests
+      steps:
+        - name: Check out the repo
+          uses: actions/checkout@v2
+        - name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v1
+        - name: Login to Docker
+          uses: docker/login-action@v1
+          with:
+            username: ${{ secrets.DOCKER_USERNAME }}
+            password: ${{ secrets.DOCKER_PASSWORD }}
+        - name: Push to DockerHub
+          uses: docker/build-push-action@v2
+          with:
+            file: ./backend/Dockerfile
+            push: true
+            tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
           
       - name: Push frontend to Docker Hub
         id: push_frontend
         uses: docker/build-push-action@v2 
         with:
-          context: ./frontend
+          context: ./frontend/Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:latest
           
-      - name: Send message if build_and_push_to_docker_hub failed
-        if: ${{ failure() }}
-        uses: appleboy/telegram-action@master
-        with:
-          to: ${{ secrets.TELEGRAM_TO }}
-          token: ${{ secrets.TELEGRAM_TOKEN }}
-          message: |
-            Статус шага login_dockerhub - ${{ steps.login_dockerhub.outcome }}
-            Статус шага push_backend - ${{ steps.push_backend.outcome }}
-            Статус шага push_frontend - ${{ steps.push_frontend.outcome }}
-            Ошибка при сборке/отправке образа на DockerHub  - ${{ github.repository }}
-            https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
   deploy:
-      name: Deploying on remote server
-      if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main'
-      runs-on: ubuntu-latest
-      needs: build_and_push_to_docker_hub
-      steps:
-        - name: pull docker image
-          uses: appleboy/ssh-action@master
-          with:
-            host: ${{ secrets.HOST }}
-            username: ${{ secrets.USER }}
-            key: ${{ secrets.SSH_KEY }}
-            passphrase: ${{ secrets.PASSPHRASE }}
-            script: |
-              sudo docker-compose stop
-              sudo docker-compose rm backend
-              sudo docker-compose rm frontend
-              sudo rm -f .env
-              sudo touch .env
-              sudo chmod 666 .env
-              sudo echo DJANGO_SECRET_KEY=${{ secrets.DJANGO_SECRET_KEY }} >> .env
-              sudo echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
-              sudo echo DB_NAME=${{ secrets.DB_NAME }} >> .env
-              sudo echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
-              sudo echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
-              sudo echo DB_HOST=${{ secrets.DB_HOST }} >> .env
-              sudo echo DB_PORT=${{ secrets.DB_PORT }} >> .env
-              sudo echo DEBUG=${{ secrets.DEBUG }} >> .env
-              sudo echo ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }} >> .env
-              sudo docker-compose up -d --build
-            
-        - name: Send message if deploy failed
-          if: ${{ failure() }}
-          uses: appleboy/telegram-action@master
-          with:
-            to: ${{ secrets.TELEGRAM_TO }}
-            token: ${{ secrets.TELEGRAM_TOKEN }}
-            message: |
-              Ошибка при деплое  - ${{ github.repository }}
-              https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    runs-on: ubuntu-latest
+    needs: build_and_push_to_docker_hub
+    steps:
+      - name: executing remote ssh commands to deploy
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+          script: |
+            cd foodgram
+            sudo docker compose -f docker-compose.yml pull
+            sudo docker compose -f docker-compose.yml down
+            sudo docker compose -f docker-compose.yml up -d
+            sudo docker compose -f docker-compose.yml exec backend python manage.py migrate
+            sudo docker compose -f docker-compose.yml exec backend python manage.py collectstatic --no-input
+            sudo docker compose exec web python manage.py runscript load_ingredients
+            sudo docker compose -f docker-compose.yml exec backend cp -r /app/collected_static/. /static/static/
+            sudo docker system prune -af         
       
   send_message:
     name: Telegram - Send message
@@ -153,80 +103,4 @@ jobs:
           to: ${{ secrets.TELEGRAM_TO }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: Деплой foodgram успешно выполнен! Коммит сделал ${{ github.actor }} с сообщением "${{ github.event.commits[0].message }}". Ссылка на коммит https://github.com/${{ github.repository }}/commit/${{github.sha}}.
-# jobs:
-#   tests:
-#     runs-on: ubuntu-latest
-#     services:
-#       postgres:
-#         image: postgres:13
-#         env:
-#           POSTGRES_USER: django_user
-#           POSTGRES_PASSWORD: django_password
-#           POSTGRES_DB: django_db
-#         ports:
-#           - 5432:5432
-#         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-#     steps:
-#     - uses: actions/checkout@v3
-#     - name: Set up Python
-#       uses: actions/setup-python@v4
-#       with:
-#         python-version: 3.9
-
-#     - name: Install dependencies
-#       run: |
-#         python -m pip install --upgrade pip
-#         pip install flake8==6.0.0 flake8-isort==6.0.0
-#         pip install -r ./backend/requirements.txt
-
-#     - name: Test with flake8
-#       env:
-#         POSTGRES_USER: django_user
-#         POSTGRES_PASSWORD: django_password
-#         POSTGRES_DB: django_db
-#         DB_HOST: 127.0.0.1
-#         DB_PORT: 5432
-#       run: |
-#         python -m flake8 backend/
  
-#   build_and_push_to_docker_hub:
-#       name: Push Docker image to DockerHub
-#       runs-on: ubuntu-latest
-#       needs: tests
-#       steps:
-#         - name: Check out the repo
-#           uses: actions/checkout@v2
-#         - name: Set up Docker Buildx
-#           uses: docker/setup-buildx-action@v1
-#         - name: Login to Docker
-#           uses: docker/login-action@v1
-#           with:
-#             username: ${{ secrets.DOCKER_USERNAME }}
-#             password: ${{ secrets.DOCKER_PASSWORD }}
-#         - name: Push to DockerHub
-#           uses: docker/build-push-action@v2
-#           with:
-#             file: ./backend/Dockerfile
-#             push: true
-#             tags: smolodtsova13/foodgram_backend:latest
-
-#   deploy:
-#     runs-on: ubuntu-latest
-#     needs: build_and_push_to_docker_hub
-#     steps:
-#       - name: executing remote ssh commands to deploy
-#         uses: appleboy/ssh-action@master
-#         with:
-#           host: ${{ secrets.HOST }}
-#           username: ${{ secrets.USER }}
-#           key: ${{ secrets.SSH_KEY }}
-#           script: |
-# # cd foodgram
-#             sudo docker compose -f docker-compose.yml pull
-#             sudo docker compose -f docker-compose.yml down
-#             sudo docker compose -f docker-compose.yml up -d
-#             sudo docker compose -f docker-compose.yml exec backend python manage.py migrate
-#             sudo docker compose -f docker-compose.yml exec backend python manage.py collectstatic --no-input
-#             sudo docker compose exec web python manage.py runscript load_ingredients
-#             sudo docker compose -f docker-compose.yml exec backend cp -r /app/collected_static/. /static/static/
-#             sudo docker system prune -af
