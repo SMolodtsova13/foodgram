@@ -72,7 +72,6 @@ python-slugify==8.0.4
 python3-openid==3.2.0
 pytimeparse==1.1.8
 pytz==2024.1
-pywin32==306
 requests==2.26.0
 requests-oauthlib==2.0.0
 setuptools==75.1.0
