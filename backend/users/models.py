@@ -14,6 +14,7 @@ max_length = max(len(role) for role in UserRoles.choices)
 
 DEFAULT_AVATAR = 'users/avatar_default.jpg'
 
+
 class FoodgramUser(AbstractUser):
     """Кастомная модель пользователей."""
 

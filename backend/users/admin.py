@@ -9,7 +9,7 @@ User = get_user_model()
 @admin.register(User)
 class FoodgramUserAdmin(admin.ModelAdmin):
     """Создание объекта пользователя в админ панели."""
-                    
+
     list_display = ('id',
                     'username',
                     'email',

@@ -196,7 +196,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
                   'image',
                   'text',
                   'cooking_time')
-        
+
     def to_representation(self, instance):
         """Метод представления модели"""
 
@@ -220,7 +220,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
 
         if not self.initial_data.get('tags'):
             raise exceptions.ValidationError('Убедитесь, что добавлен тег!')
-        
+
         tag_ids = [tag for tag in self.initial_data.get('tags')]
 
         if len(tag_ids) > len(set(tag_ids)):
@@ -230,19 +230,19 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
 
         all_tags = [tag.id for tag in Tag.objects.all()]
         self.__check_lists(tag_ids, all_tags, 'Тегов не существует!')
-        
+
         if not self.initial_data.get('ingredients'):
             raise exceptions.ValidationError(
                 'Убедитесь, что добавлены ингредиенты!'
             )
-        
+
         ids = [ing['id'] for ing in self.initial_data.get('ingredients')]
-        
+
         if len(ids) > len(set(ids)):
             raise serializers.ValidationError(
                 'Ингредиенты не должны повторяться!'
             )
-        
+
         all_ingredients = [ing.id for ing in Ingredient.objects.all()]
         self.__check_lists(ids, all_ingredients, 'Ингредиентов не существует!')
 
@@ -253,7 +253,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
 
         for element in ingredients:
             id = element['id']
-            amount = element['amount']           
+            amount = element['amount']
 
             ingredient = Ingredient.objects.get(pk=id)
             IngredientRecipe.objects.create(

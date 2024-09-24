@@ -3,8 +3,10 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
 
-from recipes.constants import (MAX_LENGTH_RECIPES_UNIT_MEASUREMENT, MAX_LENGTH_SHORT_URL,
-                               MIN_VALUE, NAME_MAX_LENGTH_RECIPES)
+from recipes.constants import (MAX_LENGTH_RECIPES_UNIT_MEASUREMENT,
+                               MAX_LENGTH_SHORT_URL,
+                               MIN_VALUE,
+                               NAME_MAX_LENGTH_RECIPES)
 
 User = get_user_model()
 

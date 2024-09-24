@@ -199,7 +199,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    @action(methods=('DELETE',), 
+    @action(methods=('DELETE',),
             detail=True,
             permission_classes=(IsAuthorPermission,))
     def delete_recipe(self, request, pk=None):
@@ -275,7 +275,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 f"({ingredient['ingredient__measurement_unit']})\n"
             )
         return HttpResponse(result, content_type='text/plain')
-    
+
     @action(methods=('POST', 'DELETE'),
             detail=True,
             permission_classes=(IsAuthenticated,),
@@ -305,6 +305,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 )
             return Response(status=status.HTTP_204_NO_CONTENT)
 
+
 class RecipeFavoritesViewSet(viewsets.ModelViewSet):
     """ViewSet для управления избранными рецептами."""
 
@@ -330,7 +331,7 @@ class RecipeFavoritesViewSet(viewsets.ModelViewSet):
         recipe = get_object_or_404(Recipe, id=pk)
         delete_recipe, _ = Favourites.objects.filter(
             user=request.user, recipes=recipe
-            ).delete()
+        ).delete()
         if not delete_recipe:
             raise serializers.ValidationError(
                 'Невозможно удалить рецепт из избранного, которого нет!'
