@@ -9,7 +9,7 @@ class IsAuthorOrReadOnlyPermission(BasePermission):
         return (
             request.method in SAFE_METHODS
             or request.user.is_authenticated
-            )
+        )
 
     def has_object_permission(self, request, view, obj):
         """Проверка возможностей для пользоватей с объектом."""
@@ -18,7 +18,7 @@ class IsAuthorOrReadOnlyPermission(BasePermission):
             request.method in SAFE_METHODS
             or obj.author == request.user
             or request.user.is_admin
-            )
+        )
 
 
 class IsAuthorPermission(BasePermission):
@@ -27,4 +27,3 @@ class IsAuthorPermission(BasePermission):
     def has_object_permission(self, request, view, obj):
         """Проверка возможностей для пользоватей с объектом."""
         return obj.author == request.user
-
