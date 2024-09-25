@@ -72,7 +72,7 @@ jobs:
           
   deploy:
     runs-on: ubuntu-latest
-    needs: build_and_push_to_docker_hub
+    needs: deploy
     steps:
       - name: executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
