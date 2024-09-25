@@ -12,10 +12,10 @@ services:
     env_file:
       - ./.env
   backend:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
-    # image: smolodtsova13/foodgram_backend:latest
+    # build:
+    #   context: ../backend
+    #   dockerfile: Dockerfile
+    image: smolodtsova13/foodgram_backend:latest
     restart: always
     env_file:
       - ./.env
@@ -23,8 +23,9 @@ services:
     depends_on:
       - db
     volumes:
-      - static:/static
+      - static:/backend_static
       - media_value:/app/media
+
   frontend:
     container_name: foodgram_frontend
     image: smolodtsova13/foodgram_frontend:latest
@@ -35,13 +36,11 @@ services:
       - static:/frontend_static
     #  - ../frontend/:/frontend_static/
     # build: ../frontend
-    # volumes:
-    #   - static:/frontend_static
+  
   nginx:
-    build: ../nginx/
+    image: smolodtsova13/foodgram_nginx:latest
+    # build: ../nginx/
     env_file: .env
-    container_name: foodgram-proxy
-    # image: nginx:1.25.4-alpine
     restart: always
     depends_on:
       - backend
@@ -56,3 +55,8 @@ services:
       - static:/static
       - media_value:/app/media/
    
+
+
+
+
+
