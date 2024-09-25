@@ -1,0 +1,41 @@
+{
+  "files": {
+    "main.css": "/static/css/main.94a524f5.css",
+    "main.js": "/static/js/main.9ff352a2.js",
+    "static/js/787.7827c030.chunk.js": "/static/js/787.7827c030.chunk.js",
+    "static/media/home-screen-bg.jpg": "/static/media/home-screen-bg.cd97ca0fb90cc7ca40fb.jpg",
+    "static/media/SF-Pro-Display-Semibold.otf": "/static/media/SF-Pro-Display-Semibold.037dc63930459813f575.otf",
+    "static/media/SF-Pro-Display-Medium.otf": "/static/media/SF-Pro-Display-Medium.b85d841dacb040b84951.otf",
+    "static/media/SF-Pro-Display-Bold.otf": "/static/media/SF-Pro-Display-Bold.b1f4d2c69fa808ebca12.otf",
+    "static/media/SF-Pro-Display-Black.otf": "/static/media/SF-Pro-Display-Black.9f6bb018ca3e8b89e9da.otf",
+    "static/media/SF-Pro-Display-Light.otf": "/static/media/SF-Pro-Display-Light.5a47a04ca76b10e69ca3.otf",
+    "static/media/SF-Pro-Display-Regular.otf": "/static/media/SF-Pro-Display-Regular.d1f5e6e16dd4f75c3950.otf",
+    "static/media/SF-Pro-Display-MediumItalic.otf": "/static/media/SF-Pro-Display-MediumItalic.96038c89a401495b43e6.otf",
+    "static/media/SF-Pro-Display-SemiboldItalic.otf": "/static/media/SF-Pro-Display-SemiboldItalic.83c857f3c60b41485937.otf",
+    "static/media/SF-Pro-Display-BoldItalic.otf": "/static/media/SF-Pro-Display-BoldItalic.9ef8d09009e261609c55.otf",
+    "static/media/SF-Pro-Display-LightItalic.otf": "/static/media/SF-Pro-Display-LightItalic.8dbfd26d5a831ca710e0.otf",
+    "static/media/SF-Pro-Display-RegularItalic.otf": "/static/media/SF-Pro-Display-RegularItalic.55118ef4e17d67dde923.otf",
+    "static/media/SF-Pro-Display-BlackItalic.otf": "/static/media/SF-Pro-Display-BlackItalic.bf4f55c98ce6b6478da6.otf",
+    "static/media/SF-Pro-Display-Semibold.woff2": "/static/media/SF-Pro-Display-Semibold.00d526c059bb8595900d.woff2",
+    "static/media/SF-Pro-Display-Medium.woff2": "/static/media/SF-Pro-Display-Medium.91f34536fe9e682ea313.woff2",
+    "static/media/SF-Pro-Display-Light.woff2": "/static/media/SF-Pro-Display-Light.5a49f416f732b25807cd.woff2",
+    "static/media/SF-Pro-Display-Bold.woff2": "/static/media/SF-Pro-Display-Bold.3bdf7419b00bc98ee585.woff2",
+    "static/media/SF-Pro-Display-Black.woff2": "/static/media/SF-Pro-Display-Black.eeb83a5991a75943da32.woff2",
+    "static/media/SF-Pro-Display-Regular.woff2": "/static/media/SF-Pro-Display-Regular.892e2051b18d6ed77017.woff2",
+    "static/media/SF-Pro-Display-LightItalic.woff2": "/static/media/SF-Pro-Display-LightItalic.7732cf9a362763570d38.woff2",
+    "static/media/SF-Pro-Display-SemiboldItalic.woff2": "/static/media/SF-Pro-Display-SemiboldItalic.e8d33e39c2036c8ec97f.woff2",
+    "static/media/SF-Pro-Display-MediumItalic.woff2": "/static/media/SF-Pro-Display-MediumItalic.e58ae62c9756881ff39b.woff2",
+    "static/media/SF-Pro-Display-BoldItalic.woff2": "/static/media/SF-Pro-Display-BoldItalic.febf25cf02b21b082006.woff2",
+    "static/media/SF-Pro-Display-BlackItalic.woff2": "/static/media/SF-Pro-Display-BlackItalic.387f80f3c090ed99ef87.woff2",
+    "static/media/SF-Pro-Display-RegularItalic.woff2": "/static/media/SF-Pro-Display-RegularItalic.58e2a6fdbe9a6192f67b.woff2",
+    "static/media/userpic-icon.jpg": "/static/media/userpic-icon.2e3faa821bb5398be2c6.jpg",
+    "index.html": "/index.html",
+    "main.94a524f5.css.map": "/static/css/main.94a524f5.css.map",
+    "main.9ff352a2.js.map": "/static/js/main.9ff352a2.js.map",
+    "787.7827c030.chunk.js.map": "/static/js/787.7827c030.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.94a524f5.css",
+    "static/js/main.9ff352a2.js"
+  ]
+}
