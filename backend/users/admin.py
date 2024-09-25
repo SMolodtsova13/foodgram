@@ -2,6 +2,7 @@ from django.contrib import admin
 
 from users.models import Follow, FoodgramUser
 
+
 @admin.register(FoodgramUser)
 class FoodgramUserAdmin(admin.ModelAdmin):
     """Создание объекта пользователя в админ панели."""
@@ -14,6 +15,7 @@ class FoodgramUserAdmin(admin.ModelAdmin):
     list_filter = ('email', 'username')
     search_fields = ('email', 'username')
     empty_value_display = 'Поле не заполнено'
+
 
 @admin.register(Follow)
 class SubscriptionAdmin(admin.ModelAdmin):
