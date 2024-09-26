@@ -18,8 +18,8 @@ from api.serializers import (IngredientSerializer, FollowSerializer,
                              TagSerializer, CreateRecipeSerializer)
 from api.permissions import IsAuthorOrReadOnlyPermission, IsAuthorPermission
 from api.pagination import LimitPagination
-from recipes.models import (IngredientRecipe, Tag, Ingredient,
-                            Favourites, Recipe, ShoppingList)
+from recipes.models import (IngredientRecipe, Tag, Ingredient, Favourites,
+                            Recipe, ShoppingList)
 from users.models import Follow
 
 User = get_user_model()
@@ -262,20 +262,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def download_shopping_list(self, request):
         """Загрузка списка покупок."""
 
-        
-        ingredients = Favourites.objects.filter(
-            user=request.user, recipes=recipe
-        ).values(
-            'ingredient__name',
-            'ingredient__measurement_unit'
-        ).annotate(sum=Sum('amount'))
-
-        # ingredients = IngredientRecipe.objects.filter(
-        #     recipe__author=request.user
+        # ingredients = Favourites.objects.filter(
+        #     user=request.user, recipes=recipe
         # ).values(
         #     'ingredient__name',
         #     'ingredient__measurement_unit'
         # ).annotate(sum=Sum('amount'))
+
+        ingredients = IngredientRecipe.objects.filter(
+            recipe__author=request.user
+        ).values(
+            'ingredient__name',
+            'ingredient__measurement_unit'
+        ).annotate(sum=Sum('amount'))
         result = ''
         for ingredient in ingredients:
             result += (
