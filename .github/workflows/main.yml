@@ -30,7 +30,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8==6.0.0 flake8-isort==6.0.0
         pip install -r ./backend/requirements.txt
-        
+
     - name: Test with flake8
       env:
         POSTGRES_USER: foodgram_user
@@ -40,7 +40,7 @@ jobs:
         DB_PORT: 5432
       run: |
         python -m flake8 backend/
-  
+
   build_and_push_to_docker_hub:
       name: Push Docker image to DockerHub
       runs-on: ubuntu-latest
