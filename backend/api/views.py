@@ -261,12 +261,21 @@ class RecipeViewSet(viewsets.ModelViewSet):
             url_name='download_shopping_cart')
     def download_shopping_list(self, request):
         """Загрузка списка покупок."""
-        ingredients = IngredientRecipe.objects.filter(
-            recipe__author=request.user
+
+        
+        ingredients = Favourites.objects.filter(
+            user=request.user, recipes=recipe
         ).values(
             'ingredient__name',
             'ingredient__measurement_unit'
         ).annotate(sum=Sum('amount'))
+
+        # ingredients = IngredientRecipe.objects.filter(
+        #     recipe__author=request.user
+        # ).values(
+        #     'ingredient__name',
+        #     'ingredient__measurement_unit'
+        # ).annotate(sum=Sum('amount'))
         result = ''
         for ingredient in ingredients:
             result += (

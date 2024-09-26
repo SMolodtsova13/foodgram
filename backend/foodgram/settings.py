@@ -105,6 +105,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
 LANGUAGE_CODE = "ru-RU"
 
 TIME_ZONE = "UTC"
@@ -117,11 +118,14 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 
+# STATIC_ROOT = BASE_DIR / "collected_static"
+
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 
 MEDIA_URL = "/media/"
 
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+MEDIA_ROOT = "/app/media"
+# MEDIA_ROOT = os.path.join(BASE_DIR, "media")
 
 AUTH_USER_MODEL = "users.FoodgramUser"
 
