@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+PAGE_SIZE = 6
+
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = os.getenv("SECRET_KEY", default="r=w+3lf%txx&%e9z&y@xmar!k#d5%*bsrf6(6x19fy=&5#01wj")
@@ -138,7 +140,7 @@ REST_FRAMEWORK = {
     ],
     "SEARCH_PARAM": "name",
     "DEFAULT_PAGINATION_CLASS": "api.pagination.LimitPagination",
-    "PAGE_SIZE": 6,
+    "PAGE_SIZE": PAGE_SIZE,
 }
 
 DJOSER = {

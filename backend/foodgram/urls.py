@@ -9,4 +9,4 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls', namespace='api')),
     path('<str:short_url>', redirect_to_full_recipe),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+] + static(.STATIC_URL, document_root=settings.STATIC_ROOT)
