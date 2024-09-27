@@ -7,7 +7,6 @@ from api.views import (IngredientViewSet, TagViewSet,
 app_name = 'api'
 
 router = routers.DefaultRouter()
-
 router.register('tags', TagViewSet, basename='tags')
 router.register(r'ingredients', IngredientViewSet, basename='ingredients')
 router.register(r'recipes', RecipeViewSet, basename='recipes')
@@ -15,6 +14,6 @@ router.register(r'users', FoodgramUserViewSet, basename='users')
 
 urlpatterns = [
     path('', include(router.urls)),
-    # path('auth/', include('djoser.urls')),
+    path('auth/', include('djoser.urls')),
     re_path(r'^auth/', include('djoser.urls.authtoken')),
 ]
