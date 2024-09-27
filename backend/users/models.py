@@ -9,6 +9,7 @@ class UserRoles(models.TextChoices):
     USER = 'user', 'Пользователь'
     ADMINISTRATOR = 'admin', 'Администратор'
 
+
 max_length = max(len(role) for role in UserRoles.choices)
 
 
@@ -61,6 +62,7 @@ class FoodgramUser(AbstractUser):
         return (self.is_superuser
                 or self.is_staff
                 or self.role == UserRoles.ADMINISTRATOR.value)
+
     @property
     def is_user(self):
         return self.role == UserRoles.USER.value
