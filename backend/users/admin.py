@@ -1,14 +1,15 @@
 from django.contrib import admin
+from django.contrib.auth.models import Group
 
 from users.models import Follow, FoodgramUser
 
+admin.site.unregister(Group) 
 
 @admin.register(FoodgramUser)
 class FoodgramUserAdmin(admin.ModelAdmin):
     """Создание объекта пользователя в админ панели."""
     list_display = ('username',
                     'email',
-                    'role',
                     'first_name',
                     'last_name',
                     'id')

@@ -5,13 +5,6 @@ from django.db.models import UniqueConstraint
 from recipes.constants import NAME_MAX_LENGTH, EMAIL_MAX_LENGTH
 
 
-class UserRoles(models.TextChoices):
-    USER = 'user', 'Пользователь'
-    ADMINISTRATOR = 'admin', 'Администратор'
-
-
-max_length = max(len(role) for role in UserRoles.choices)
-
 DEFAULT_AVATAR = 'users/avatar_default.jpg'
 
 
@@ -32,17 +25,13 @@ class FoodgramUser(AbstractUser):
                               unique=True,
                               blank=False,
                               max_length=EMAIL_MAX_LENGTH)
-    role = models.CharField('Роль пользователя',
-                            choices=UserRoles.choices,
-                            max_length=NAME_MAX_LENGTH,
-                            default=UserRoles.USER)
     avatar = models.ImageField('Аватар профиля',
                                upload_to='users',
                                blank=True,
                                null=True,
                                default=DEFAULT_AVATAR)
 
-    objects = UserManager()
+    # objects = UserManager()
 
     class Meta:
         ordering = ('id',)
@@ -55,16 +44,6 @@ class FoodgramUser(AbstractUser):
 
     def __str__(self):
         return self.username[:50]
-
-    @property
-    def is_admin(self):
-        return (self.is_superuser
-                or self.is_staff
-                or self.role == UserRoles.ADMINISTRATOR.value)
-
-    @property
-    def is_user(self):
-        return self.role == UserRoles.USER.value
 
 
 class Follow(models.Model):
