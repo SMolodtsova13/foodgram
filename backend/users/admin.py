@@ -3,7 +3,8 @@ from django.contrib.auth.models import Group
 
 from users.models import Follow, FoodgramUser
 
-admin.site.unregister(Group) 
+admin.site.unregister(Group)
+
 
 @admin.register(FoodgramUser)
 class FoodgramUserAdmin(admin.ModelAdmin):

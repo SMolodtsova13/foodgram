@@ -21,6 +21,7 @@ class IsAuthorOrReadOnlyPermission(BasePermission):
             # or request.user.is_staff
         )
 
+
 class IsAuthorPermission(BasePermission):
     """Проверка доступов."""
 
