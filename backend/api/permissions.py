@@ -13,7 +13,6 @@ class IsAuthorOrReadOnlyPermission(BasePermission):
 
     def has_object_permission(self, request, view, obj):
         """Проверка возможностей для пользоватей с объектом."""
-        print("has_object_permission")
         return (
             request.method in SAFE_METHODS
             or obj.author == request.user

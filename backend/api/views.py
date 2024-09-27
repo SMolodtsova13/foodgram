@@ -13,7 +13,7 @@ from rest_framework.response import Response
 
 from api.filters import RecipeFilter
 from api.serializers import (IngredientSerializer, FollowSerializer,
-                             RecipeSerializer, CustomUserSerializer,
+                             ReadRecipeSerializer, CustomUserSerializer,
                              FavoritesSerializer, ShoppingListSerializer,
                              TagSerializer, CreateRecipeSerializer)
 from api.permissions import IsAuthorOrReadOnlyPermission, IsAuthorPermission
@@ -192,7 +192,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """Метод для вызова определенного сериализатора. """
 
         if self.action in ('list', 'retrieve'):
-            return RecipeSerializer
+            return ReadRecipeSerializer
         elif self.action in ('create', 'partial_update'):
             return CreateRecipeSerializer
 
