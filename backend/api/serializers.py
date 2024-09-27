@@ -1,15 +1,12 @@
-import base64
 from sqids import Sqids
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from django.core.files.base import ContentFile
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import exceptions, serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from api.core import Base64ImageFieldSerializer
-from users.validators import validate_username, validate_email
 from users.models import Follow
 from recipes.models import (Tag, Favourites, Ingredient, Recipe,
                             IngredientRecipe, ShoppingList, TagRecipe)
@@ -80,7 +77,9 @@ class CustomUserSerializer(UserSerializer):
         return (
             request
             and request.user.is_authenticated
-            and Follow.objects.filter(user=request.user, author=obj.id).exists()
+            and Follow.objects.filter(
+                user=request.user, author=obj.id
+            ).exists()
         )
 
 

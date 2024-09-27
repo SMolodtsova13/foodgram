@@ -1,16 +1,7 @@
 import base64
-# from sqids import Sqids
 
-# from django.contrib.auth import get_user_model
-# from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from rest_framework import serializers
-# from rest_framework.validators import UniqueTogetherValidator
-
-# from users.validators import validate_username, validate_email
-# from users.models import Follow
-# from recipes.models import (Tag, Favourites, Ingredient, Recipe,
-#                             IngredientRecipe, ShoppingList, TagRecipe)
 
 
 class Base64ImageFieldSerializer(serializers.ImageField):
