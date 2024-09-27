@@ -16,7 +16,7 @@ from api.serializers import (IngredientSerializer, FollowSerializer,
                              RecipeSerializer, CustomUserSerializer,
                              FavoritesSerializer, ShoppingListSerializer,
                              TagSerializer, CreateRecipeSerializer)
-from api.permissions import IsAuthorOrReadOnlyPermission
+from api.permissions import IsAuthorOrReadOnlyPermission, IsAuthorPermission
 from api.pagination import LimitPagination
 from recipes.models import (IngredientRecipe, Tag, Ingredient, Favourites,
                             Recipe, ShoppingList)
