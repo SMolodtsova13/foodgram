@@ -12,7 +12,11 @@ router.register(r'ingredients', IngredientViewSet, basename='ingredients')
 router.register(r'recipes', RecipeViewSet, basename='recipes')
 router.register(r'users', FoodgramUserViewSet, basename='users')
 
+# urlpatterns = [
+#     path('', include(router.urls)),
+#     re_path(r'^auth/', include('djoser.urls.authtoken'))
+# ]
 urlpatterns = [
-    path('', include(router.urls)),
+    re_path(r'^', include(router.urls)),
     re_path(r'^auth/', include('djoser.urls.authtoken'))
 ]
