@@ -101,10 +101,12 @@ jobs:
             sudo docker compose -f docker-compose.yml pull
             sudo docker compose -f docker-compose.yml down
             sudo docker compose -f docker-compose.yml up -d
+            sudo docker compose -f docker-compose.yml exec backend python manage.py makemigrations
             sudo docker compose -f docker-compose.yml exec backend python manage.py migrate
             sudo docker compose -f docker-compose.yml exec backend python manage.py collectstatic --no-input
             sudo docker compose -f docker-compose.yml exec backend cp -r /app/collected_static/. /static/static/
             sudo docker system prune -af
+#sudo docker compose exec backend python manage.py dataloads
 # sudo docker compose -f docker-compose.yml exec backend python manage.py runscript ingredients
   
   send_message:

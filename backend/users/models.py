@@ -37,10 +37,10 @@ class FoodgramUser(AbstractUser):
         ordering = ('id',)
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        constraints = (UniqueConstraint(
-            fields=('username', 'email'),
-            name='unique_user',
-        ),)
+        # constraints = (UniqueConstraint(
+        #     fields=('username', 'email'),
+        #     name='unique_user',
+        # ),)
 
     def __str__(self):
         return self.username[:50]

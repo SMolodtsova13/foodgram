@@ -30,7 +30,6 @@ class Migration(migrations.Migration):
                 ('first_name', models.CharField(max_length=150, verbose_name='Имя пользователя')),
                 ('last_name', models.CharField(max_length=150, verbose_name='Фамилия')),
                 ('email', models.EmailField(max_length=254, unique=True, verbose_name='Электронная почта')),
-                ('role', models.CharField(choices=[('user', 'Пользователь'), ('admin', 'Администратор')], default='user', max_length=150, verbose_name='Роль пользователя')),
                 ('avatar', models.ImageField(blank=True, default='users/avatar_default.jpg', null=True, upload_to='users', verbose_name='Аватар профиля')),
                 ('groups', models.ManyToManyField(blank=True, help_text='The groups this user belongs to. A user will get all permissions granted to each of their groups.', related_name='user_set', related_query_name='user', to='auth.Group', verbose_name='groups')),
                 ('user_permissions', models.ManyToManyField(blank=True, help_text='Specific permissions for this user.', related_name='user_set', related_query_name='user', to='auth.Permission', verbose_name='user permissions')),
@@ -59,6 +58,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name='foodgramuser',
-            constraint=models.UniqueConstraint(fields=('username', 'email'), name='unique_user'),
+            constraint=models.UniqueConstraint(fields=('username', 'email')),
         ),
     ]
