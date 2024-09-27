@@ -201,7 +201,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(methods=('DELETE',),
             detail=True,
-            permission_classes=(IsAuthorPermission,))
+            permission_classes=(IsAuthorOrReadOnlyPermission,))
     def delete_recipe(self, request, pk=None):
         try:
             recipe = self.get_object()

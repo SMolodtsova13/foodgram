@@ -1,7 +1,9 @@
-from rest_framework.permissions import SAFE_METHODS, BasePermission
+from rest_framework.permissions import (SAFE_METHODS,
+                                        BasePermission,
+                                        IsAuthenticatedOrReadOny)
 
 
-class IsAuthorOrReadOnlyPermission(BasePermission):
+class IsAuthorOrReadOnlyPermission(IsAuthenticatedOrReadOny):
     """Проверка доступов."""
 
     def has_permission(self, request, view):
@@ -17,8 +19,6 @@ class IsAuthorOrReadOnlyPermission(BasePermission):
         return (
             request.method in SAFE_METHODS
             or obj.author == request.user
-            # or request.user.is_admin
-            # or request.user.is_staff
         )
 
 
