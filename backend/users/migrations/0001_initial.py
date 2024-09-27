@@ -56,8 +56,8 @@ class Migration(migrations.Migration):
                 'ordering': ('user__username',),
             },
         ),
-        migrations.AddConstraint(
-            model_name='foodgramuser',
-            constraint=models.UniqueConstraint(fields=('username', 'email')),
-        ),
+        # migrations.AddConstraint(
+        #     model_name='foodgramuser',
+        #     constraint=models.UniqueConstraint(fields=('username', 'email')),
+        # ),
     ]
