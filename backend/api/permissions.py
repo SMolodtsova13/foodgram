@@ -19,9 +19,9 @@ class IsAuthorOrReadOnlyPermission(BasePermission):
         )
 
 
-class IsAuthorPermission(BasePermission):
-    """Проверка доступов."""
+# class IsAuthorPermission(BasePermission):
+#     """Проверка доступов."""
 
-    def has_object_permission(self, request, view, obj):
-        """Проверка возможностей для пользоватей с объектом."""
-        return obj.author == request.user
+#     def has_object_permission(self, request, view, obj):
+#         """Проверка возможностей для пользоватей с объектом."""
+#         return obj.author == request.user

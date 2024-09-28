@@ -1,59 +1,19 @@
-from sqids import Sqids
-
+from django.db import transaction
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
-from djoser.serializers import UserCreateSerializer, UserSerializer
+from djoser.serializers import UserSerializer
 from rest_framework import exceptions, serializers
 from rest_framework.validators import UniqueTogetherValidator
 
 from api.core import Base64ImageFieldSerializer
 from users.models import Follow
-from recipes.models import (Tag, Favourites, Ingredient, Recipe,
-                            IngredientRecipe, ShoppingList, TagRecipe)
+from recipes.models import (Favourites, Ingredient, Recipe,
+                            Tag, IngredientRecipe, ShoppingList)
 
 
 User = get_user_model()
 
 
-# class UserValidationMixin:
-#     """Миксин для валидации username и  email пользователя."""
-
-#     def validate_username(self, value):
-#         return validate_username(value)
-
-#     def validate_email(self, value):
-#         return validate_email(value)
-
-
-class CustomUserCreateSerializer(UserCreateSerializer):
-    """Создание пользователя foodgram."""
-    email = serializers.EmailField()
-    username = serializers.CharField()
-
-    class Meta:
-        model = User
-        fields = ('id',
-                  'email',
-                  'username',
-                  'first_name',
-                  'last_name',
-                  'password')
-
-    def validate(self, user_data):
-        email = user_data.get('email')
-        username = user_data.get('username')
-
-        if User.objects.filter(email=email).exists():
-            if User.objects.filter(username=username).exists():
-                return user_data
-            raise ValidationError(f'Email {email} уже существует')
-
-        if User.objects.filter(username=username).exists():
-            raise ValidationError(f'Username {username} уже существует')
-        return user_data
-
-
-class CustomUserSerializer(UserSerializer):
+class FoodgramUserSerializer(UserSerializer):
     """Получение списка пользователей и конкретного пользователя."""
 
     is_subscribed = serializers.SerializerMethodField()
@@ -83,7 +43,7 @@ class CustomUserSerializer(UserSerializer):
         )
 
 
-class FollowSerializer(CustomUserSerializer):
+class FollowSerializer(FoodgramUserSerializer):
     """Подписки."""
     recipes_count = serializers.SerializerMethodField(
         read_only=True,
@@ -120,6 +80,16 @@ class FollowSerializer(CustomUserSerializer):
         print("get_recipes_count")
         """Количество рецептов автора."""
         return obj.recipes.count()
+    
+    def validate(self, data):
+        user = self.context.get('user')
+        if Follow.objects.filter(author=self, user=user).exists():
+            raise Exception('Подписка уже оформлена!')
+        return data
+    
+    def create(self, validated_data):
+        user = self.context.get('user')
+        return Follow.objects.create(author=self, user=user)
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -150,17 +120,21 @@ class IngredientsRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = IngredientRecipe
         fields = ('id', 'name', 'measurement_unit', 'amount')
-        validators = UniqueTogetherValidator(
-            queryset=IngredientRecipe.objects.all(), fields=('ingredient',
-                                                             'recipe'),
-        )
+        # validators = UniqueTogetherValidator(
+        #     queryset=IngredientRecipe.objects.all(), fields=('ingredient',
+        #                                                      'recipe'),
+        # )
 
 
 class CreateIngredientsInRecipeSerializer(serializers.ModelSerializer):
     """Сериализатор создания ингредиента в создании рецепта."""
 
-    id = serializers.IntegerField()
-    amount = serializers.IntegerField()
+    ingredient = serializers.PrimaryKeyRelatedField(
+        queryset=Ingredient.objects.all(),
+        write_only=True
+    )
+    # id = serializers.IntegerField()
+    # amount = serializers.IntegerField()
 
     @staticmethod
     def validate_amount(value):
@@ -173,7 +147,7 @@ class CreateIngredientsInRecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = IngredientRecipe
-        fields = ('id', 'amount')
+        fields = ('ingredient', 'amount')
 
 
 class CreateRecipeSerializer(serializers.ModelSerializer):
@@ -187,12 +161,14 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Recipe
-        fields = ('ingredients',
-                  'tags',
-                  'name',
-                  'image',
-                  'text',
-                  'cooking_time')
+        fields = (
+            'ingredients',
+            'tags',
+            'name',
+            'image',
+            'text',
+            'cooking_time'
+        )
 
     def to_representation(self, instance):
         """Метод представления модели"""
@@ -204,73 +180,59 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         )
         return serializer.data
 
-    def __check_lists(self, list1, list2, message):
-        for el in list1:
-            if el not in list2:
-                raise serializers.ValidationError(
-                    message
-                )
-
     def validate(self, data):
         """Метод проверки данных"""
-        if not self.initial_data.get('tags'):
+        tags = self.data.get('tags')
+        if not tags:
             raise exceptions.ValidationError('Убедитесь, что добавлен тег!')
 
-        tag_ids = [tag for tag in self.initial_data.get('tags')]
 
-        if len(tag_ids) > len(set(tag_ids)):
+        if len(tags) > len(set(tags)):
             raise serializers.ValidationError(
                 'Теги не должны повторяться!'
             )
 
-        all_tags = [tag.id for tag in Tag.objects.all()]
-        self.__check_lists(tag_ids, all_tags, 'Тегов не существует!')
-
-        if not self.initial_data.get('ingredients'):
+        ingredients = self.data.get('ingredients')
+        if not ingredients:
             raise exceptions.ValidationError(
                 'Убедитесь, что добавлены ингредиенты!'
             )
 
-        ids = [ing['id'] for ing in self.initial_data.get('ingredients')]
+        ids = [ing['id'] for ing in ingredients]
 
         if len(ids) > len(set(ids)):
             raise serializers.ValidationError(
                 'Ингредиенты не должны повторяться!'
             )
-
-        all_ingredients = [ing.id for ing in Ingredient.objects.all()]
-        self.__check_lists(ids, all_ingredients, 'Ингредиентов не существует!')
-
         return data
 
     def __create_ingredients(self, ingredients, recipe):
         """Метод создания ингредиента"""
+        ingredient_data = []
         for element in ingredients:
             id = element['id']
             amount = element['amount']
-
-            ingredient = Ingredient.objects.get(pk=id)
-            IngredientRecipe.objects.create(
-                ingredient=ingredient,
-                recipe=recipe,
-                amount=amount
+            ingredient_data.append(
+                {'ingredient': id, 'recipe': recipe, 'amount': amount}
             )
 
+        IngredientRecipe.objects.bulk_create(
+            IngredientRecipe(**row) for row in ingredient_data
+        )
+    
+    @transaction.atomic
     def __create_tags(self, tags, recipe):
         """Метод добавления тега"""
         recipe.tags.set(tags)
 
+    @transaction.atomic
     def create(self, validated_data):
         """Метод создания модели"""
         ingredients = validated_data.pop('ingredients')
         tags = validated_data.pop('tags')
-        recipe = Recipe.objects.create(**validated_data)
-
-        keys_for_short_url = [recipe.id, len(ingredients), recipe.cooking_time]
-        sqids = Sqids()
-        code = sqids.encode(keys_for_short_url)
-        recipe.short_url = code
-        recipe.save()
+        recipe = Recipe.objects.create(
+            author=validated_data.pop('author'), **validated_data
+        )
 
         self.__create_ingredients(ingredients, recipe)
         self.__create_tags(tags, recipe)
@@ -278,8 +240,8 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         """Метод обновления модели"""
-        IngredientRecipe.objects.filter(recipe=instance).delete()
-        TagRecipe.objects.filter(recipe=instance).delete()
+        instance.tags.clear()
+        instance.ingredients.clear()
 
         self.__create_ingredients(validated_data.pop('ingredients'), instance)
         self.__create_tags(validated_data.pop('tags'), instance)
@@ -298,7 +260,7 @@ class ShortRecipeSerializer(serializers.ModelSerializer):
 class ReadRecipeSerializer(serializers.ModelSerializer):
     """Сериализатор модели Рецепт."""
 
-    author = CustomUserSerializer(read_only=True)
+    author = FoodgramUserSerializer(read_only=True)
     tags = TagSerializer(many=True)
     ingredients = IngredientsRecipeSerializer(source='ingredient_list',
                                               many=True,
@@ -347,47 +309,43 @@ class ReadRecipeSerializer(serializers.ModelSerializer):
 class FavoritesSerializer(serializers.ModelSerializer):
     """"Сериализатор модели Избранное."""
 
-    id = serializers.ReadOnlyField(source='recipe.id')
-    name = serializers.ReadOnlyField(source='recipe.name')
-    cooking_time = serializers.ReadOnlyField(source='recipe.cooking_time')
-    image = Base64ImageFieldSerializer(source='recipe.image', read_only=True)
-
     class Meta:
         model = Favourites
-        fields = ('id', 'name', 'image', 'cooking_time')
+        fields = ('user', 'recipes',)
         validators = UniqueTogetherValidator(
             queryset=Favourites.objects.all(), fields=('user', 'recipes'),
         )
-
-    def validate(self, user_data):
-        """Валидация при добавлении рецепта в избранное."""
-        user = user_data.get('user')
-        recipe = user_data.get('recipe')
-        if Favourites.objects.filter(user=user, recipe=recipe).exists():
-            raise ValidationError(f'Рецепт {recipe} уже добавлен в избранное!')
-        return user_data
-
+    
+    def to_representation(self, instance):
+        serialized_recipes = self.serialize_recipes(instance.recipes)
+        data = {
+            'user': instance.user.username,
+            'recipes': serialized_recipes,
+        }
+        return data
+    
+    def serialize_recipes(self, recipes):
+        serializer = ShortRecipeSerializer(recipes, many=True)
+        return serializer.data
 
 class ShoppingListSerializer(serializers.ModelSerializer):
     """Сериализатор модели Список Покупок."""
 
-    id = serializers.ReadOnlyField(source='recipe.id')
-    name = serializers.ReadOnlyField(source='recipe.name')
-    image = Base64ImageFieldSerializer(source='recipe.image', read_only=True)
-    cooking_time = serializers.ReadOnlyField(source='recipe.cooking_time')
-
     class Meta:
         model = ShoppingList
-        fields = ('id', 'name', 'image', 'cooking_time')
+        fields = ('user', 'recipes',)
         validators = UniqueTogetherValidator(
             queryset=ShoppingList.objects.all(), fields=('user', 'recipes'),
         )
 
-    def validate(self, user_data):
-        """Валидация при добавлении рецепта в список покупок."""
-        user = user_data.get('user')
-        recipe = user_data.get('recipe')
-
-        if ShoppingList.objects.filter(user=user, recipe=recipe).exists():
-            raise ValidationError(f'Рецепт {recipe} уже добавлен в список!')
-        return user_data
+    def to_representation(self, instance):
+        serialized_recipes = self.serialize_recipes(instance.recipes)
+        data = {
+            'user': instance.user.username,
+            'recipes': serialized_recipes,
+        }
+        return data
+    
+    def serialize_recipes(self, recipes):
+        serializer = ShortRecipeSerializer(recipes, many=True)
+        return serializer.data

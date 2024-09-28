@@ -5,8 +5,7 @@ from recipes.models import (Tag, Ingredient, Favourites, Recipe,
 
 
 class TagAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'color', 'slug')
-    list_filter = ('color',)
+    list_display = ('id', 'name', 'slug')
     empty_value_display = 'Поле не заполнено'
 
 

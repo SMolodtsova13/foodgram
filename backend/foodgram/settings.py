@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from django.core.management.utils import get_random_secret_key
 
@@ -8,9 +9,9 @@ load_dotenv()
 
 PAGE_SIZE = 6
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = os.getenv("SECRET_KEY", default="r=w+3lf%txx&%e9z&y@xmar!k#d5%*bsrf6(6x19fy=&5#01wj")
+SECRET_KEY = os.getenv("SECRET_KEY", get_random_secret_key())
 
 if not SECRET_KEY:
     SECRET_KEY = get_random_secret_key()
@@ -32,7 +33,6 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "djoser",
-    "colorfield",
     "drf_yasg",
     "django_filters",
     "users.apps.UsersConfig",
@@ -123,11 +123,13 @@ STATIC_URL = "/static/"
 # STATIC_ROOT = BASE_DIR / "collected_static"
 
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
+# STATIC_ROOT = BASE_DIR.joinpath('static')
 
 MEDIA_URL = "/media/"
 
 MEDIA_ROOT = "/app/media"
-# MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+# MEDIA_ROOT = BASE_DIR.joinpath('media')
 
 AUTH_USER_MODEL = "users.FoodgramUser"
 
@@ -147,14 +149,11 @@ DJOSER = {
     "LOGIN_FIELD": "email",
     "HIDE_USERS": False,
     "SERIALIZERS": {
-        "user_create": "api.serializers.CustomUserCreateSerializer",
-        "user": "api.serializers.CustomUserSerializer",
-        "current_user": "api.serializers.CustomUserSerializer",
+        "user": "api.serializers.FoodgramUserSerializer",
+        "current_user": "api.serializers.FoodgramUserSerializer",
     },
     "PERMISSIONS": {
         "user": ["rest_framework.permissions.IsAuthenticatedOrReadOnly"],
         "user_list": ["rest_framework.permissions.AllowAny"],
-        "token_create": ["rest_framework.permissions.AllowAny"],
-        "token_destroy": ["rest_framework.permissions.IsAuthenticated"],
     },
 }
