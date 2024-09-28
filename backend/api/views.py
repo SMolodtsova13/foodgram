@@ -11,13 +11,13 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
+from api.core import create_obj_recipes
 from api.filters import RecipeFilter
 from api.serializers import (IngredientSerializer, FollowSerializer,
                              ReadRecipeSerializer, FoodgramUserSerializer,
                              FavoritesSerializer, ShoppingListSerializer,
                              TagSerializer, CreateRecipeSerializer)
 from api.permissions import IsAuthorOrReadOnlyPermission
-from foodgram.backend.api.core import create_obj_recipes
 from recipes.models import (IngredientRecipe, Tag, Ingredient, Favourites,
                             Recipe, ShoppingList)
 from users.models import Follow
@@ -45,19 +45,19 @@ class FoodgramUserViewSet(UserViewSet):
         """Добавление/удаление аватара."""
         user = self.request.user
         if request.method == 'PUT':
-            serializer = FoodgramUserSerializer(user,
-                                              data=request.data,
-                                              partial=True)
+            serializer = FoodgramUserSerializer(
+                user, data=request.data, partial=True
+            )
             serializer.is_valid(raise_exception=True)
             serializer.save()
             return Response(
                 {'avatar': request.build_absolute_uri(user.avatar.url)},
                 status=status.HTTP_200_OK
             )
-        elif request.method == 'DELETE':
-            self.request.user.avatar = None
-            self.request.user.save()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        self.request.user.avatar = None
+        self.request.user.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False,
             methods=('GET',),
@@ -67,9 +67,10 @@ class FoodgramUserViewSet(UserViewSet):
         """Просмотр подписок пользователя."""
         user = self.request.user
         queryset = Follow.objects.filter(
-            user=user).select_related('author').values_list(
-                'author__username', flat=True
-            )
+            user=user
+        ).select_related('author').values_list(
+            'author__username', flat=True
+        )
         unique_users = list(set(queryset))
         pages = self.paginate_queryset(unique_users)
         serializer = FollowSerializer(
@@ -104,7 +105,7 @@ class FoodgramUserViewSet(UserViewSet):
         subscription = get_object_or_404(Follow, user=user, author=author)
         delete_count, _ = subscription.delete()
 
-        if delete_count is 0:
+        if delete_count == 0:
             return Response({'errors': 'Вы уже отписались!'},
                             status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_204_NO_CONTENT)

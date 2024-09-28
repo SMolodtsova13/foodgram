@@ -40,7 +40,7 @@ class Ingredient(models.Model):
     """Модель ингредиента."""
 
     name = models.CharField(
-        'Название ингредиента',max_length=NAME_MAX_LENGTH_INGREDIENT
+        'Название ингредиента', max_length=NAME_MAX_LENGTH_INGREDIENT
     )
     measurement_unit = models.CharField(
         'Единица измерения', max_length=MAX_LENGTH_RECIPES_UNIT_MEASUREMENT
@@ -61,7 +61,7 @@ class Ingredient(models.Model):
             measurement_unit=self.measurement_unit
         ).exists():
             raise ValidationError({
-                'name': 'Такой ингредиент с данной единицей измерения существует.'
+                'name': 'Ингредиент с данной единицей измерения существует.'
             })
 
 
@@ -120,6 +120,7 @@ class Recipe(models.Model):
         self.short_url = code
         return super(Recipe, self).save(*args, **kwargs)
 
+
 class IngredientRecipe(models.Model):
     """Модель для связи рецепта и ингредиентов"""
 
@@ -133,7 +134,7 @@ class IngredientRecipe(models.Model):
         Ingredient,
         on_delete=models.CASCADE,
         verbose_name='Ингредиент'
-        )
+    )
     amount = models.PositiveIntegerField(
         verbose_name='Количество ингридиентов',
         validators=(MinValueValidator(MIN_VALUE),)
@@ -191,6 +192,7 @@ class Favourites(FavouritesAndShoppingList):
             raise ValidationError({
                 'recipe': 'Рецепт уже в избранном.'
             })
+
 
 class ShoppingList(FavouritesAndShoppingList):
     """Список покупок."""

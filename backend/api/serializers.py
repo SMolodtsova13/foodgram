@@ -80,13 +80,13 @@ class FollowSerializer(FoodgramUserSerializer):
         print("get_recipes_count")
         """Количество рецептов автора."""
         return obj.recipes.count()
-    
+
     def validate(self, data):
         user = self.context.get('user')
         if Follow.objects.filter(author=self, user=user).exists():
             raise Exception('Подписка уже оформлена!')
         return data
-    
+
     def create(self, validated_data):
         user = self.context.get('user')
         return Follow.objects.create(author=self, user=user)
@@ -120,10 +120,6 @@ class IngredientsRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = IngredientRecipe
         fields = ('id', 'name', 'measurement_unit', 'amount')
-        # validators = UniqueTogetherValidator(
-        #     queryset=IngredientRecipe.objects.all(), fields=('ingredient',
-        #                                                      'recipe'),
-        # )
 
 
 class CreateIngredientsInRecipeSerializer(serializers.ModelSerializer):
@@ -186,7 +182,6 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         if not tags:
             raise exceptions.ValidationError('Убедитесь, что добавлен тег!')
 
-
         if len(tags) > len(set(tags)):
             raise serializers.ValidationError(
                 'Теги не должны повторяться!'
@@ -219,7 +214,7 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         IngredientRecipe.objects.bulk_create(
             IngredientRecipe(**row) for row in ingredient_data
         )
-    
+
     @transaction.atomic
     def __create_tags(self, tags, recipe):
         """Метод добавления тега"""
@@ -315,7 +310,7 @@ class FavoritesSerializer(serializers.ModelSerializer):
         validators = UniqueTogetherValidator(
             queryset=Favourites.objects.all(), fields=('user', 'recipes'),
         )
-    
+
     def to_representation(self, instance):
         serialized_recipes = self.serialize_recipes(instance.recipes)
         data = {
@@ -323,10 +318,11 @@ class FavoritesSerializer(serializers.ModelSerializer):
             'recipes': serialized_recipes,
         }
         return data
-    
+
     def serialize_recipes(self, recipes):
         serializer = ShortRecipeSerializer(recipes, many=True)
         return serializer.data
+
 
 class ShoppingListSerializer(serializers.ModelSerializer):
     """Сериализатор модели Список Покупок."""
@@ -345,7 +341,7 @@ class ShoppingListSerializer(serializers.ModelSerializer):
             'recipes': serialized_recipes,
         }
         return data
-    
+
     def serialize_recipes(self, recipes):
         serializer = ShortRecipeSerializer(recipes, many=True)
         return serializer.data

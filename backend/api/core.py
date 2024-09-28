@@ -22,10 +22,11 @@ def redirect_to_full_recipe(request, short_url):
     full_url = f'/recipes/{recipe.id}'
     return HttpResponseRedirect(full_url)
 
+
 def create_obj_recipes(request, serializer, pk):
     recipe = get_object_or_404(Recipe, pk)
-    arguments = {'user':request.user.id,
-                 'recipe':recipe.id,}
+    arguments = {'user': request.user.id,
+                 'recipe': recipe.id}
     serializer.context = arguments
     serializer.is_valid(raise_exception=True)
     serializer.save()
