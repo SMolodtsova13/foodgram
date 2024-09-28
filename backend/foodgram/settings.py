@@ -155,6 +155,6 @@ DJOSER = {
         "user": ["rest_framework.permissions.IsAuthenticatedOrReadOnly"],
         "user_list": ["rest_framework.permissions.AllowAny"],
         "token_create": ["rest_framework.permissions.AllowAny"],
-        "token_destroy": ["rest_framework.permissions.IsAuthenticated"],  
+        "token_destroy": ["rest_framework.permissions.IsAuthenticated"],
     },
 }
