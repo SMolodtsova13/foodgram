@@ -94,7 +94,7 @@ class FoodgramUserViewSet(UserViewSet):
 
         if request.method == 'POST':
             serializer = FollowSerializer(
-                author, context={'request': request,'user': user}
+                author, context={'request': request, 'user': user}
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
@@ -203,8 +203,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         ).values(
             'ingredient__name',
             'ingredient__measurement_unit'
-        ).order_by('ingredient__name'
-        ).annotate(sum=Sum('amount'))
+        ).order_by('ingredient__name').annotate(sum=Sum('amount'))
         result = ''
         for ingredient in ingredients:
             result += (
