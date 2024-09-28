@@ -2,7 +2,6 @@ from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
-  
 
 from recipes.constants import NAME_MAX_LENGTH, EMAIL_MAX_LENGTH
 
@@ -39,8 +38,6 @@ class FoodgramUser(AbstractUser):
         null=True,
         default=DEFAULT_AVATAR
     )
-
-    # objects = UserManager()
 
     class Meta:
         ordering = ('username', 'email',)
@@ -89,7 +86,7 @@ class Follow(models.Model):
             raise ValidationError({
                 'user': 'Нельзя подписаться на самого себя!'
             })
-        
+
         if Follow.objects.filter(user=self.user, author=self.author).exists():
             raise ValidationError({
                 'user': 'Такая подписка уже существует!'
