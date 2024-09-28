@@ -30,6 +30,13 @@ class FoodgramUserViewSet(UserViewSet):
 
     pagination_class = LimitOffsetPagination
 
+    def get_permissions(self):
+        if self.action == 'me':
+            permissions = (IsAuthenticated,)
+        else:
+            permissions = super().get_permissions()
+        return [permission() for permission in permissions]
+
     @action(detail=False,
             methods=('PUT', 'DELETE',),
             url_path='me/avatar',

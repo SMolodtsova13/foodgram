@@ -28,7 +28,7 @@ class FoodgramUser(AbstractUser):
     email = models.EmailField(
         'Электронная почта',
         unique=True,
-        max_length=EMAIL_MAX_LENGTH
+        max_length=EMAIL_MAX_LENGTH,
         primary_key=True,
         db_index=True
     )

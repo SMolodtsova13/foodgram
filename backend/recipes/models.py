@@ -166,14 +166,11 @@ class TagRecipe(models.Model):
         return f'{self.tag} {self.recipe}'
 
 
-class FavouritesAndShoppingList(models.Model):
+class Favourites(models.Model):
+    """Модель избранного."""
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-
-
-class Favourites(FavouritesAndShoppingList):
-    """Модель избранного."""
 
     class Meta:
         verbose_name = 'Избранное'
@@ -194,8 +191,11 @@ class Favourites(FavouritesAndShoppingList):
             })
 
 
-class ShoppingList(FavouritesAndShoppingList):
+class ShoppingList(models.Model):
     """Список покупок."""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = 'Корзина'
