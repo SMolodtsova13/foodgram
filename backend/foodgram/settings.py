@@ -18,10 +18,9 @@ if not SECRET_KEY:
 
 DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
+ALLOWED_HOSTS = ['89.169.172.126', 'localhost', '127.0.0.1', 'foodgram.webhop.me', '*']
 
-# ALLOWED_HOSTS = ['89.169.172.126', 'localhost', '127.0.0.1', 'foodgram.webhop.me', '*']
-
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1, localhost').split(', ')
+# ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1, localhost').split(', ')
 
 INSTALLED_APPS = [
     "django.contrib.admin",
