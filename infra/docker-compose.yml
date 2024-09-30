@@ -13,7 +13,7 @@ services:
       - ./.env
   
   backend:
-    image: smolodtsova13/foodgram_backend:latest
+    image:  ${{ secrets.DOCKER_USERNAME }}/foodgram_backend:latest
     restart: always
     env_file:
       - ./.env
@@ -25,14 +25,14 @@ services:
 
   frontend:
     container_name: foodgram_frontend
-    image: smolodtsova13/foodgram_frontend:latest
-    command: cp -r /app/build/. /frontend_static/
+    image:  ${{ secrets.DOCKER_USERNAME }}/foodgram_frontend:latest
+    command: cp -r /app/build/. /static/
     depends_on:
       - backend
     volumes:
-      - static:/frontend_static
+      - static:/static
   nginx:
-    image: smolodtsova13/foodgram_nginx:latest
+    image:  ${{ secrets.DOCKER_USERNAME }}/foodgram_nginx:latest
     env_file: .env
     restart: always
     depends_on:
