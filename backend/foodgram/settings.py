@@ -1,5 +1,5 @@
 import os
-from pathlib import Path
+# from pathlib import Path
 
 from django.core.management.utils import get_random_secret_key
 
@@ -9,7 +9,8 @@ load_dotenv()
 
 PAGE_SIZE = 6
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+# BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) 
 
 SECRET_KEY = os.getenv("SECRET_KEY", get_random_secret_key())
 
@@ -104,7 +105,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 LANGUAGE_CODE = "ru-RU"
 
 TIME_ZONE = "UTC"
@@ -117,17 +117,14 @@ USE_TZ = True
 
 STATIC_URL = "/static/"
 
+STATIC_ROOT = os.path.join(BASE_DIR, "static") 
+
 # STATIC_ROOT = BASE_DIR / "collected_static"
 
-STATIC_ROOT = os.path.join(BASE_DIR, "static")
-# STATIC_ROOT = BASE_DIR.joinpath('static')
-
 MEDIA_URL = "/media/"
+# MEDIA_ROOT = "/app/media"
 
-MEDIA_ROOT = "/app/media"
-
-# MEDIA_ROOT = BASE_DIR.joinpath('media')
-
+MEDIA_ROOT = os.path.join(BASE_DIR, "media") 
 AUTH_USER_MODEL = "users.FoodgramUser"
 
 REST_FRAMEWORK = {
