@@ -1,5 +1,5 @@
 from sqids import Sqids
-from datetime import date, datetime
+from datetime import datetime
 
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
@@ -115,8 +115,9 @@ class Recipe(models.Model):
     def save(self, *args, **kwargs):
         today = datetime.today()
         keys_for_short_url = [
-            round(today.timestamp()*1000), 
-            self.author.id, self.cooking_time
+            round(today.timestamp()*1000),
+            self.author.id,
+            self.cooking_time
         ]
         sqids = Sqids()
         code = sqids.encode(keys_for_short_url)

@@ -92,7 +92,7 @@ class FoodgramUserViewSet(UserViewSet):
                     {'errors': 'Такая подписка уже существует!'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            
+
             follow = Follow.objects.create(user=user, author=author)
             serializer = FollowSerializer(
                 follow, context={'request': request}
@@ -202,7 +202,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if request.method == 'POST':
             return self.__create_obj_recipes(request, Favourites, pk)
         return self.__delete_obj_recipes(request, Favourites, pk)
-    
+
     def __create_obj_recipes(self, request, model, pk):
         """Добавить рецепт."""
         if model.objects.filter(user=request.user, recipe__id=pk).exists():

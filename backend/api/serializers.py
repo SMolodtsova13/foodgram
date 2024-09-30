@@ -46,6 +46,7 @@ class FoodgramUserSerializer(UserSerializer):
             raise serializers.ValidationError('Поле avatar обязательно!')
         return data
 
+
 class FollowSerializer(serializers.ModelSerializer):
     """Подписки."""
     id = serializers.ReadOnlyField(source='author.id')
