@@ -8,7 +8,7 @@ load_dotenv()
 
 PAGE_SIZE = 6
 
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) 
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 SECRET_KEY = os.getenv("SECRET_KEY", get_random_secret_key())
 
