@@ -1,3 +1,4 @@
+volumes:
   static:
   media_value:
   db_value:
@@ -10,6 +11,7 @@ services:
       - db_value:/var/lib/postgresql/data/
     env_file:
       - ./.env
+  
   backend:
     image: smolodtsova13/foodgram_backend:latest
     restart: always
@@ -18,7 +20,7 @@ services:
     depends_on:
       - db
     volumes:
-      - static:/backend_static
+      - static:/static
       - media_value:/app/media
 
   frontend:
