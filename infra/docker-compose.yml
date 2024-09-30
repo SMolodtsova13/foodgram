@@ -25,11 +25,11 @@ services:
   frontend:
     container_name: foodgram_frontend
     image: smolodtsova13/foodgram_frontend:latest
-    command: cp -r /app/build/. /static/
+    command: cp -r /app/build/. /frontend_static/
     depends_on:
       - backend
     volumes:
-      - static:/static
+      - static:/frontend_static
   
   nginx:
     image: smolodtsova13/foodgram_nginx:latest
@@ -42,14 +42,9 @@ services:
       - "80:80"
 
     volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf
-      - ../frontend/build:/usr/share/nginx/html/
+      # - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      # - ../frontend/build:/usr/share/nginx/html/
       - ../docs/:/usr/share/nginx/html/api/docs/
       - static:/static
       - media_value:/app/media/
-   
-
-
-
-
-
+  
