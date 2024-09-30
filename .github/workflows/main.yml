@@ -105,10 +105,10 @@ jobs:
             sudo docker compose -f docker-compose.yml exec backend python manage.py migrate
             sudo docker compose -f docker-compose.yml exec backend python manage.py collectstatic --no-input
             sudo docker compose -f docker-compose.yml exec backend cp -r /app/collected_static/. /static/static/
-        # sudo docker compose -f docker-compose.yml exec backend cp -r /app/collected_static/. /backend_static/static/
-        # sudo docker compose exec backend python manage.py dataloads
             sudo docker system prune -af
 
+# sudo docker compose exec backend python manage.py dataloads
+# sudo docker compose -f docker-compose.yml exec backend cp -r /app/collected_static/. /backend_static/static/
   send_message:
     name: Telegram - Send message
     runs-on: ubuntu-latest
