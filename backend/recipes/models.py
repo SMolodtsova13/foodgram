@@ -115,7 +115,7 @@ class Recipe(models.Model):
     def save(self, *args, **kwargs):
         today = datetime.today()
         keys_for_short_url = [
-            round(today.timestamp()*1000),
+            round(today.timestamp() * 1000),
             self.author.id,
             self.cooking_time
         ]
