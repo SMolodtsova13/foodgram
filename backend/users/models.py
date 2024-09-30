@@ -28,8 +28,6 @@ class FoodgramUser(AbstractUser):
         'Электронная почта',
         unique=True,
         max_length=EMAIL_MAX_LENGTH,
-        primary_key=True,
-        db_index=True
     )
     avatar = models.ImageField(
         'Аватар профиля',
@@ -91,3 +89,4 @@ class Follow(models.Model):
             raise ValidationError({
                 'user': 'Такая подписка уже существует!'
             })
+        return self.cleaned_data

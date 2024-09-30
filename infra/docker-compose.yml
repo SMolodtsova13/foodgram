@@ -12,34 +12,27 @@ services:
     env_file:
       - ./.env
   backend:
-    # build:
-    #   context: ../backend
-    #   dockerfile: Dockerfile
     image: smolodtsova13/foodgram_backend:latest
     restart: always
     env_file:
       - ./.env
-    # command: gunicorn foodgram.wsgi:application --bind 0.0.0.0:8000
     depends_on:
       - db
     volumes:
-      - static:/backend_static
+      - static:/static
       - media_value:/app/media
 
   frontend:
     container_name: foodgram_frontend
     image: smolodtsova13/foodgram_frontend:latest
-    command: cp -r /app/build/. /frontend_static/
+    command: cp -r /app/build/. /static/
     depends_on:
       - backend
     volumes:
-      - static:/frontend_static
-    #  - ../frontend/:/frontend_static/
-    # build: ../frontend
+      - static:/static
   
   nginx:
     image: smolodtsova13/foodgram_nginx:latest
-    # build: ../nginx/
     env_file: .env
     restart: always
     depends_on:

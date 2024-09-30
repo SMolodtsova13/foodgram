@@ -108,8 +108,6 @@ jobs:
             sudo docker compose exec backend python manage.py dataloads
             sudo docker system prune -af
 
-# sudo docker compose -f docker-compose.yml exec backend python manage.py runscript ingredients
-  
   send_message:
     name: Telegram - Send message
     runs-on: ubuntu-latest
