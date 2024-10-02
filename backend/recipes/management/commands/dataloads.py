@@ -6,10 +6,10 @@ from recipes.models import Ingredient
 
 
 class Command(BaseCommand):
-    """Загрузка ингридиентов."""
+    help = 'Загрузка ингредиентов.'
 
     def handle(self, *args, **options):
-        with open('../../data/ingredients.csv',
+        with open('../data/ingredients.csv',
                   newline='',
                   encoding='utf-8') as file:
             reader = DictReader(
