@@ -188,6 +188,7 @@ class FavouritesAndShoppingList(models.Model):
     class Meta:
         abstract = True
 
+
 class Favourites(FavouritesAndShoppingList):
     """Модель избранного."""
 
@@ -201,7 +202,6 @@ class Favourites(FavouritesAndShoppingList):
                 name='unique_user_and_recipe_in_Favourites',
             ),
         )
-
 
     def __str__(self):
         return f'Рецепт {self.recipe} в избранном у {self.user.username}'

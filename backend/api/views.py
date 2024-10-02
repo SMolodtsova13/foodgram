@@ -1,6 +1,5 @@
-from django.db.models import BooleanField, Count, Sum, Value
+from django.db.models import Sum
 from django.contrib.auth import get_user_model
-from django.forms import BooleanField
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -13,10 +12,11 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 
 from api.filters import RecipeFilter
-from api.serializers import (FavouritesSerializer, FollowCreateSerializer, IngredientSerializer, FollowSerializer,
-                             ReadRecipeSerializer, FoodgramUserSerializer, ShoppingListSerializer,
-                             ShortRecipeSerializer, TagSerializer,
-                             CreateRecipeSerializer, UserAvatarSerializer)
+from api.serializers import (FavouritesSerializer, FollowCreateSerializer,
+                             IngredientSerializer, FollowSerializer,
+                             ReadRecipeSerializer, ShoppingListSerializer,
+                             TagSerializer, CreateRecipeSerializer,
+                             UserAvatarSerializer)
 from api.permissions import IsAuthorOrReadOnlyPermission
 from recipes.models import (IngredientRecipe, Tag, Ingredient, Favourites,
                             Recipe, ShoppingList)
@@ -70,7 +70,9 @@ class FoodgramUserViewSet(UserViewSet):
         unique_users = list(set(queryset))
         pages = self.paginate_queryset(unique_users)
         serializer = FollowSerializer(
-            pages, many=True, context={'request': request, 'user': request.user}
+            pages,
+            many=True,
+            context={'request': request, 'user': request.user}
         )
         return self.get_paginated_response(serializer.data)
 
@@ -92,7 +94,9 @@ class FoodgramUserViewSet(UserViewSet):
             return Response(
                 data=serializer.data, status=status.HTTP_201_CREATED
             )
-        delete_count, _ = Follow.objects.filter(user=user, author=author).delete()
+        delete_count, _ = Follow.objects.filter(
+            user=user, author=author
+        ).delete()
         if delete_count == 0:
             return Response({'errors': 'Вы уже отписались!'},
                             status=status.HTTP_400_BAD_REQUEST)
@@ -154,7 +158,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """Добавление/удаление рецепта из списка покупок."""
         get_object_or_404(Recipe, id=pk)
         if request.method == 'POST':
-            shopping_list_data= {'user': request.user.id, 'recipe': int(pk)}
+            shopping_list_data = {'user': request.user.id, 'recipe': int(pk)}
 
             return self.__create_obj_recipes(
                 ShoppingListSerializer(data=shopping_list_data)
@@ -191,7 +195,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             url_name='favorite')
     def favorite(self, request, pk=None):
         """Добавление/удаление рецепта в избранное."""
-        get_object_or_404(Recipe, id=pk) 
+        get_object_or_404(Recipe, id=pk)
         if request.method == 'POST':
             favourites_data = {'user': request.user.id, 'recipe': int(pk)}
             return self.__create_obj_recipes(
@@ -207,7 +211,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def __delete_obj_recipes(self, request, model, pk):
         """Удалить рецепт."""
-        delete_count, _ = model.objects.filter(user=request.user, recipe__id=pk).delete()
+        delete_count, _ = model.objects.filter(
+            user=request.user, recipe__id=pk
+        ).delete()
         if delete_count == 0:
             return Response({'errors': 'Рецепт уже удален'},
                             status=status.HTTP_400_BAD_REQUEST)

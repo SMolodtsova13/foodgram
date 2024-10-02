@@ -1,6 +1,6 @@
 from django.db import transaction
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError 
+from django.core.exceptions import ValidationError
 from djoser.serializers import UserSerializer
 from rest_framework import exceptions, serializers
 
@@ -68,15 +68,15 @@ class FollowCreateSerializer(serializers.ModelSerializer):
         user = data.get('user')
         author = data.get('author')
         if user == author:
-            raise  serializers.ValidationError(
+            raise serializers.ValidationError(
                 'Нельзя подписаться/отписаться от себя!'
             )
         if Follow.objects.filter(user=user, author=author).exists():
-                raise  serializers.ValidationError(
-                    'Такая подписка уже существует!'
-                )
+            raise serializers.ValidationError(
+                'Такая подписка уже существует!'
+            )
         return data
-    
+
     def to_representation(self, instance):
         return FollowSerializer(instance.author, context=self.context).data
 
@@ -316,8 +316,9 @@ class ReadRecipeSerializer(serializers.ModelSerializer):
             ).exists()
         )
 
+
 class FavouritesSerializer(serializers.ModelSerializer):
-    """"Сериализатор модели Избранное.""" 
+    """"Сериализатор модели Избранное."""
 
     class Meta:
         model = Favourites
@@ -326,9 +327,9 @@ class FavouritesSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """Метод представления модели"""
         return ShortRecipeSerializer(instance.recipe).data
-    
+
     def validate(self, data):
-        """Валидация при добавлении рецепта в избранное.""" 
+        """Валидация при добавлении рецепта в избранное."""
         user = data.get('user')
         recipe = data.get('recipe')
         if Favourites.objects.filter(user=user, recipe=recipe).exists():
@@ -337,7 +338,7 @@ class FavouritesSerializer(serializers.ModelSerializer):
 
 
 class ShoppingListSerializer(serializers.ModelSerializer):
-    """"Сериализатор модели Список покупок.""" 
+    """"Сериализатор модели Список покупок."""
 
     class Meta:
         model = ShoppingList
@@ -346,10 +347,9 @@ class ShoppingListSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         """Метод представления модели"""
         return ShortRecipeSerializer(instance.recipe).data
-    
-     
+
     def validate(self, data):
-        """Валидация при добавлении рецепта в список покупок.""" 
+        """Валидация при добавлении рецепта в список покупок."""
         user = data.get('user')
         recipe = data.get('recipe')
         if ShoppingList.objects.filter(user=user, recipe=recipe).exists():

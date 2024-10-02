@@ -9,7 +9,9 @@ class Command(BaseCommand):
     """Загрузка ингридиентов."""
 
     def handle(self, *args, **options):
-        with open('../data/ingredients.csv', newline='', encoding='utf-8') as file:
+        with open(
+            '../data/ingredients.csv', newline='', encoding='utf-8'
+            ) as file:
             reader = DictReader(
                 file, fieldnames=('name', 'measurement_unit',)
             )
