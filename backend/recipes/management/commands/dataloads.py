@@ -9,7 +9,7 @@ class Command(BaseCommand):
     help = 'Загрузка ингредиентов.'
 
     def handle(self, *args, **options):
-        with open('../data/ingredients.csv',
+        with open('ingredients.csv',
                   newline='',
                   encoding='utf-8') as file:
             reader = DictReader(
