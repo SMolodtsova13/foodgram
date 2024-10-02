@@ -1,6 +1,7 @@
 from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from django.db.models import UniqueConstraint
 from django.db import models
 
 from recipes.constants import NAME_MAX_LENGTH, EMAIL_MAX_LENGTH
@@ -37,6 +38,9 @@ class FoodgramUser(AbstractUser):
         default=DEFAULT_AVATAR
     )
 
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
+
     class Meta:
         ordering = ('username', 'email',)
         verbose_name = 'Пользователь'
@@ -50,9 +54,6 @@ class FoodgramUser(AbstractUser):
 
     def get_short_name(self):
         return self.first_name
-
-    USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
 
 class Follow(models.Model):
@@ -74,7 +75,10 @@ class Follow(models.Model):
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
         ordering = ('user__username',)
-        unique_together = ('user', 'author',)
+        constraints = (UniqueConstraint(
+            fields=('author', 'user'),
+            name='unique_following',
+        ),)
 
     def __str__(self):
         return f'{self.user.username} подписался на {self.author.username}'
@@ -83,10 +87,5 @@ class Follow(models.Model):
         if self.user == self.author:
             raise ValidationError({
                 'user': 'Нельзя подписаться на самого себя!'
-            })
-
-        if Follow.objects.filter(user=self.user, author=self.author).exists():
-            raise ValidationError({
-                'user': 'Такая подписка уже существует!'
             })
         return self.cleaned_data

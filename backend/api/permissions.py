@@ -17,11 +17,3 @@ class IsAuthorOrReadOnlyPermission(BasePermission):
             request.method in SAFE_METHODS
             or obj.author == request.user
         )
-
-
-# class IsAuthorPermission(BasePermission):
-#     """Проверка доступов."""
-
-#     def has_object_permission(self, request, view, obj):
-#         """Проверка возможностей для пользоватей с объектом."""
-#         return obj.author == request.user

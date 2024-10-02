@@ -4,6 +4,7 @@ from datetime import datetime
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
+from django.db.models import UniqueConstraint
 from django.db import models
 
 from recipes.constants import (
@@ -51,7 +52,12 @@ class Ingredient(models.Model):
         ordering = ('name',)
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
-        unique_together = ('name', 'measurement_unit',)
+        constraints = (
+            UniqueConstraint(
+                fields=('name', 'measurement_unit'),
+                name='nique_name_and_measurement_unit',
+            ),
+        )
 
     def __str__(self):
         return self.name[:50]
@@ -70,16 +76,19 @@ class Recipe(models.Model):
     """Модель рецепта."""
 
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='recipes'
+        User,
+        on_delete=models.CASCADE,
+        related_name='recipes',
+        verbose_name='Автор'
     )
     ingredients = models.ManyToManyField(
         Ingredient,
         through='IngredientRecipe',
         through_fields=('recipe', 'ingredient'),
-        related_name="recipes",
+        related_name='recipes',
         verbose_name='Ингредиенты'
     )
-    tags = models.ManyToManyField(Tag)
+    tags = models.ManyToManyField(Tag, verbose_name='Теги')
     name = models.CharField(
         'Название рецепта', max_length=NAME_MAX_LENGTH_RECIPES
     )
@@ -113,15 +122,16 @@ class Recipe(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
-        today = datetime.today()
-        keys_for_short_url = [
-            round(today.timestamp() * 1000),
-            self.author.id,
-            self.cooking_time
-        ]
-        sqids = Sqids()
-        code = sqids.encode(keys_for_short_url)
-        self.short_url = code
+        if not self.short_url:
+            today = datetime.today()
+            keys_for_short_url = [
+                round(today.timestamp() * 1000),
+                self.author.id,
+                self.cooking_time
+            ]
+            sqids = Sqids()
+            code = sqids.encode(keys_for_short_url)
+            self.short_url = code
         return super(Recipe, self).save(*args, **kwargs)
 
 
@@ -170,17 +180,28 @@ class TagRecipe(models.Model):
         return f'{self.tag} {self.recipe}'
 
 
-class Favourites(models.Model):
-    """Модель избранного."""
+class FavouritesAndShoppingList(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
 
     class Meta:
+        abstract = True
+
+class Favourites(FavouritesAndShoppingList):
+    """Модель избранного."""
+
+    class Meta:
         verbose_name = 'Избранное'
         verbose_name_plural = 'Избранное'
         default_related_name = 'favorites'
-        unique_together = ('user', 'recipe',)
+        constraints = (
+            UniqueConstraint(
+                fields=('user', 'recipe'),
+                name='unique_user_and_recipe_in_Favourites',
+            ),
+        )
+
 
     def __str__(self):
         return f'Рецепт {self.recipe} в избранном у {self.user.username}'
@@ -195,17 +216,19 @@ class Favourites(models.Model):
             })
 
 
-class ShoppingList(models.Model):
+class ShoppingList(FavouritesAndShoppingList):
     """Список покупок."""
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
 
     class Meta:
         verbose_name = 'Корзина'
         verbose_name_plural = 'Корзина'
         default_related_name = 'shopping_recipe'
-        unique_together = ('user', 'recipe',)
+        constraints = (
+            UniqueConstraint(
+                fields=('user', 'recipe'),
+                name='unique_user_and_recipe_in_ShoppingList',
+            ),
+        )
 
     def __str__(self):
         return f'Рецепт {self.recipe} в списке покупок {self.user.username}'
@@ -216,5 +239,5 @@ class ShoppingList(models.Model):
             recipe=self.recipe
         ).exists():
             raise ValidationError({
-                'recipe': 'Рецепт уже в избранном.'
+                'recipe': 'Рецепт уже в списке покупок.'
             })
