@@ -1,7 +1,6 @@
-from django.core.exceptions import ValidationError
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
-from django.db.models import UniqueConstraint
+from django.db.models import UniqueConstraint, CheckConstraint
 from django.db import models
 
 from recipes.constants import NAME_MAX_LENGTH, EMAIL_MAX_LENGTH
@@ -75,17 +74,15 @@ class Follow(models.Model):
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
         ordering = ('user__username',)
-        constraints = (UniqueConstraint(
-            fields=('author', 'user'),
-            name='unique_following',
-        ),)
+        constraints = (
+            UniqueConstraint(
+                fields=('author', 'user'), name='unique_following',
+            ),
+            CheckConstraint(
+                check=~models.Q(user=models.F('author')),
+                name='user_is_not_author',
+            ),
+        )
 
     def __str__(self):
         return f'{self.user.username} подписался на {self.author.username}'
-
-    def clean(self):
-        if self.user == self.author:
-            raise ValidationError({
-                'user': 'Нельзя подписаться на самого себя!'
-            })
-        return self.cleaned_data

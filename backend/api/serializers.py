@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from djoser.serializers import UserSerializer
 from rest_framework import exceptions, serializers
 
-from api.core import Base64ImageFieldSerializer
+from api.fields import Base64ImageFieldSerializer
 from users.models import Follow
 from recipes.models import (Favourites, Ingredient, Recipe,
                             Tag, IngredientRecipe, ShoppingList)
@@ -69,7 +69,7 @@ class FollowCreateSerializer(serializers.ModelSerializer):
         author = data.get('author')
         if user == author:
             raise serializers.ValidationError(
-                'Нельзя подписаться/отписаться от себя!'
+                'Нельзя подписаться на себя!'
             )
         if Follow.objects.filter(user=user, author=author).exists():
             raise serializers.ValidationError(
@@ -81,10 +81,9 @@ class FollowCreateSerializer(serializers.ModelSerializer):
         return FollowSerializer(instance.author, context=self.context).data
 
 
-class FollowSerializer(serializers.ModelSerializer):
+class FollowSerializer(FoodgramUserSerializer):
     """Подписки."""
 
-    is_subscribed = serializers.SerializerMethodField()
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
 
@@ -101,12 +100,6 @@ class FollowSerializer(serializers.ModelSerializer):
             'is_subscribed',
             'recipes_count'
         )
-
-    def get_is_subscribed(self, obj):
-        user = self.context.get('user')
-        return Follow.objects.filter(
-            user=user, author=obj
-        ).exists()
 
     def get_recipes(self, obj):
         request = self.context.get('request')

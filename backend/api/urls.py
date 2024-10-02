@@ -8,8 +8,8 @@ app_name = 'api'
 
 router = routers.DefaultRouter()
 router.register('tags', TagViewSet, basename='tags')
-router.register(r'ingredients', IngredientViewSet, basename='ingredients')
-router.register(r'recipes', RecipeViewSet, basename='recipes')
+router.register('ingredients', IngredientViewSet, basename='ingredients')
+router.register('recipes', RecipeViewSet, basename='recipes')
 router.register(r'users', FoodgramUserViewSet, basename='users')
 
 urlpatterns = [

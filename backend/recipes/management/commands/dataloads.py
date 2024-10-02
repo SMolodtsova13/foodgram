@@ -1,5 +1,7 @@
+import os
 from csv import DictReader
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from recipes.models import Ingredient
@@ -9,7 +11,9 @@ class Command(BaseCommand):
     help = 'Загрузка ингредиентов.'
 
     def handle(self, *args, **options):
-        with open('ingredients.csv', newline='', encoding='utf-8') as file:
+        path = os.path.join(settings.BASE_DIR, 'data/ingredients.csv')
+        with open(
+            path, 'r', encoding='utf-8') as file:
             reader = DictReader(
                 file, fieldnames=('name', 'measurement_unit',)
             )

@@ -63,10 +63,7 @@ class FoodgramUserViewSet(UserViewSet):
             url_name='subscriptions')
     def subscriptions(self, request):
         """Просмотр подписок пользователя."""
-        queryset = User.objects.filter(
-            id__in=request.user.follower.all(
-            ).select_related('author').values_list('author', flat=True)
-        )
+        queryset = User.objects.filter(follower__user=request.user)
         unique_users = list(set(queryset))
         pages = self.paginate_queryset(unique_users)
         serializer = FollowSerializer(
@@ -136,7 +133,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     def get_serializer_class(self):
         """Метод для вызова определенного сериализатора."""
-        print('get_serializer_class')
         if self.action in ('create', 'partial_update'):
             return CreateRecipeSerializer
         return ReadRecipeSerializer
@@ -158,10 +154,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """Добавление/удаление рецепта из списка покупок."""
         get_object_or_404(Recipe, id=pk)
         if request.method == 'POST':
-            shopping_list_data = {'user': request.user.id, 'recipe': int(pk)}
-
             return self.__create_obj_recipes(
-                ShoppingListSerializer(data=shopping_list_data)
+                ShoppingListSerializer, request, pk
             )
         return self.__delete_obj_recipes(request, ShoppingList, pk)
 
@@ -197,17 +191,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """Добавление/удаление рецепта в избранное."""
         get_object_or_404(Recipe, id=pk)
         if request.method == 'POST':
-            favourites_data = {'user': request.user.id, 'recipe': int(pk)}
             return self.__create_obj_recipes(
-                FavouritesSerializer(data=favourites_data)
+                FavouritesSerializer, request, pk
             )
         return self.__delete_obj_recipes(request, Favourites, pk)
 
-    def __create_obj_recipes(self, serializer):
+    def __create_obj_recipes(self, serializer, request, pk):
         """Добавить рецепт."""
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        data = {'user': request.user.id, 'recipe': int(pk)}
+        serializer_obj = serializer(data=data)
+        serializer_obj.is_valid(raise_exception=True)
+        serializer_obj.save()
+        return Response(serializer_obj.data, status=status.HTTP_201_CREATED)
 
     def __delete_obj_recipes(self, request, model, pk):
         """Удалить рецепт."""
@@ -218,3 +213,4 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return Response({'errors': 'Рецепт уже удален'},
                             status=status.HTTP_400_BAD_REQUEST)
         return Response(status=status.HTTP_204_NO_CONTENT)
+    
