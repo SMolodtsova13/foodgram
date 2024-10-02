@@ -12,8 +12,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         path = os.path.join(settings.BASE_DIR, 'data/ingredients.csv')
-        with open(
-            path, 'r', encoding='utf-8') as file:
+        with open(path, 'r', encoding='utf-8') as file:
             reader = DictReader(
                 file, fieldnames=('name', 'measurement_unit',)
             )
