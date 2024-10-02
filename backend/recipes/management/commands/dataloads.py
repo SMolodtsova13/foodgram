@@ -9,17 +9,10 @@ class Command(BaseCommand):
     help = 'Загрузка ингредиентов.'
 
     def handle(self, *args, **options):
-        with open('ingredients.csv',
-                  newline='',
-                  encoding='utf-8') as file:
+        with open("ingredients.csv", newline="", encoding="utf-8") as file:
             reader = DictReader(
-                file, fieldnames=('name', 'measurement_unit',)
+                file, fieldnames=("name", "measurement_unit")
             )
-            ingredients = [
-                Ingredient(
-                    name=row['name'], measurement_unit=row['measurement_unit']
-                )
-                for row in reader
-            ]
+            ingredients = tuple(Ingredient(**row) for row in reader)
             Ingredient.objects.bulk_create(ingredients, ignore_conflicts=True)
-            print('Data is load.')
+            print("Data is load.")
