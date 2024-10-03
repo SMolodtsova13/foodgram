@@ -64,8 +64,7 @@ class FoodgramUserViewSet(UserViewSet):
     def subscriptions(self, request):
         """Просмотр подписок пользователя."""
         queryset = User.objects.filter(follower__user=request.user)
-        unique_users = list(set(queryset))
-        pages = self.paginate_queryset(unique_users)
+        pages = self.paginate_queryset(queryset)
         serializer = FollowSerializer(
             pages,
             many=True,
@@ -166,7 +165,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             url_name='download_shopping_cart')
     def download_shopping_list(self, request):
         """Загрузка списка покупок."""
-
         ingredients = IngredientRecipe.objects.filter(
             recipe__author=request.user
         ).values(
@@ -180,7 +178,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 f"{ingredient['sum']}"
                 f"({ingredient['ingredient__measurement_unit']})\n"
             )
-        return HttpResponse(result, content_type='text/plain')
+        response = HttpResponse(result, content_type='text/plain')
+        response['Content-Disposition'] = (
+            'attachment; filename="shopping_list.txt"'
+        )
+        return response
 
     @action(methods=('POST', 'DELETE'),
             detail=True,
