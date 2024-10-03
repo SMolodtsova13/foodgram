@@ -166,7 +166,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def download_shopping_list(self, request):
         """Загрузка списка покупок."""
         ingredients = IngredientRecipe.objects.filter(
-            recipe__author=request.user
+            recipe__shopping_recipe__user=request.user
         ).values(
             'ingredient__name',
             'ingredient__measurement_unit'
