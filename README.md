@@ -139,7 +139,7 @@ docker-compose exec backend python manage.py dataloads
 | 127.0.0.1/api/docs/  | Описание работы API |
 
 ## Пользовательские роли
-![ Пользовательские роли](https://ltdfoto.ru/image/hdAuVk)
+![ Пользовательские роли](https://ibb.co/94RzHsy)
 
 ## Автор:  
 _Молодцова Светлана_  
