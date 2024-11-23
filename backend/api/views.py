@@ -114,7 +114,7 @@ class TagViewSet(FoodgramReadOnlyModelViewSet):
 
 
 class IngredientViewSet(FoodgramReadOnlyModelViewSet):
-    """Получение списка ингредиентов, конкретного ингредиента."""
+    """Получение списка ингредиентов, конкретного рецепта."""
 
     permission_classes = (IsAuthorOrReadOnlyPermission,)
     queryset = Ingredient.objects.all()
